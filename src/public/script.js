@@ -55,32 +55,6 @@ let selectedClasses = new Set([
     'Wind Knight',
 ]);
 
-function formatNumber(num) {
-    if (isNaN(num)) return 'NaN';
-    if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M';
-    if (num >= 1_000) return (num / 1_000).toFixed(1) + 'K';
-    return Math.round(num).toString();
-}
-
-function sortUsers(users, mode) {
-    switch (mode) {
-        case 'damage':
-            return users.sort(
-                (a, b) => b.total_damage.total - a.total_damage.total || b.total_healing.total - a.total_healing.total
-            );
-        case 'healing':
-            return users.sort(
-                (a, b) => b.total_healing.total - a.total_healing.total || b.total_damage.total - a.total_damage.total
-            );
-        case 'taken':
-            return users.sort((a, b) => b.taken_damage - a.taken_damage || b.total_damage.total - a.total_damage.total);
-        case 'dps':
-            return users.sort((a, b) => b.total_dps - a.total_dps || b.total_hps - a.total_hps);
-        case 'hps':
-            return users.sort((a, b) => b.total_hps - a.total_hps || b.total_dps - a.total_dps);
-    }
-}
-
 let rafRenderId = null;
 let scheduledUsersArray = null;
 let lastRenderTime = 0;
@@ -106,9 +80,253 @@ function scheduleRenderDataList(users) {
     });
 }
 
+function formatNumber(num) {
+    if (isNaN(num)) return 'NaN';
+    if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1) + 'B';
+    if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M';
+    if (num >= 1_000) return (num / 1_000).toFixed(1) + 'K';
+    return Math.round(num).toString();
+}
+
+function sortUsers(users, mode) {
+    switch (mode) {
+        case 'damage':
+            return users.sort(
+                (a, b) => b.total_damage.total - a.total_damage.total || b.total_healing.total - a.total_healing.total
+            );
+        case 'healing':
+            return users.sort(
+                (a, b) => b.total_healing.total - a.total_healing.total || b.total_damage.total - a.total_damage.total
+            );
+        case 'taken':
+            return users.sort((a, b) => b.taken_damage - a.taken_damage || b.total_damage.total - a.total_damage.total);
+        case 'dps':
+            return users.sort((a, b) => b.total_dps - a.total_dps || b.total_hps - a.total_hps);
+        case 'hps':
+            return users.sort((a, b) => b.total_hps - a.total_hps || b.total_dps - a.total_dps);
+    }
+}
+
 function updateAll() {
     const usersArray = Object.values(allUsers).filter((u) => u.total_dps > 0 || u.total_hps > 0);
     scheduleRenderDataList(usersArray);
+}
+
+const barContent = {
+    damage: ({ user, damagePercent }) => {
+        return `${formatNumber(user.total_damage.total)} (${formatNumber(user.total_dps)} DPS, ${damagePercent.toFixed(1)}%)`;
+    },
+    heal: ({ user, healingPercent }) => {
+        return `${formatNumber(user.total_healing.total)} (${formatNumber(user.total_hps)} HPS, ${healingPercent.toFixed(1)}%)`;
+    },
+    damageTaken: ({ user, damageTakenPercent }) => {
+        return `${formatNumber(user.taken_damage)} (${damageTakenPercent.toFixed(1)}%)`;
+    },
+};
+
+function subBar({ barContent, icon, type }) {
+    return `<div class="sub-bar">
+                <img src="${icon}" class="icon-stat" onerror="this.style.display='none'">
+                <div class="sub-bar-text" data-type="${type}">
+                   ${barContent}
+                </div>
+            </div>`;
+}
+
+function mainBar({ barColor, barPercent, barContent, displayName, mainProfession, icon, index }) {
+    return `<div class="main-bar">
+                <div class="stats-bar-fill" style="width: ${barPercent}%; background-color: ${barColor};"></div>
+                <div class="content">
+                    <span class="rank">${index + 1}.</span>
+                    <img src="${icon}" class="class-icon icon" alt="${mainProfession}" onerror="this.style.display='none'">
+                    <span class="name">${displayName}</span>
+                    <span class="stats">${barContent}</span>
+                </div>
+            </div>`;
+}
+
+function initSubBarContent({ user, damagePercent, healingPercent, damageTakenPercent }) {
+    function initSubBar(types) {
+        const hasDamage = user.total_damage.total > 0 || user.total_dps > 0;
+        const hasDamageTaken = (user.taken_damage || 0) > 0;
+        const hasHealing = user.total_healing.total > 0 || user.total_hps > 0;
+        let result = '';
+
+        if (types.includes('damage') && hasDamage)
+            result += subBar({
+                type: 'damage',
+                icon: 'assets/swords.svg',
+                barContent: `${barContent['damage']({
+                    user,
+                    damagePercent,
+                })}`,
+            });
+        if (types.includes('damageTaken') && hasDamageTaken)
+            result += subBar({
+                type: 'damageTaken',
+                icon: 'assets/shield-checkered.svg',
+                barContent: `${barContent['damageTaken']({
+                    user,
+                    damageTakenPercent,
+                })}`,
+            });
+        if (types.includes('heal') && hasHealing)
+            result += subBar({
+                type: 'heal',
+                icon: 'assets/heart-plus.svg',
+                barContent: `${barContent['heal']({
+                    user,
+                    healingPercent,
+                })}`,
+            });
+
+        return result;
+    }
+
+    switch (currentMode) {
+        case 'healing':
+        case 'hps':
+            return initSubBar(['damage', 'damageTaken']);
+        case 'taken':
+            return initSubBar(['damage', 'heal']);
+        default:
+            return initSubBar(['damageTaken', 'heal']);
+    }
+}
+
+function formatUserData(user) {
+    let icon = '';
+    const professionString = user.profession ? user.profession.trim() : '';
+    const mainProfession = professionString.split('(')[0].trim();
+    const displayName = user.fightPoint ? `${user.name} (${user.fightPoint})` : user.name;
+
+    // init class icon
+    if (mainProfession !== '...' && mainProfession.length > 1 && !/^\.+$/.test(mainProfession)) {
+        icon = `assets/${mainProfession.toLowerCase().replace(/ /g, '_')}.png`;
+    }
+
+    return { icon, displayName, mainProfession };
+}
+
+function initMainBarContent({ index, user, damagePercent, healingPercent, damageTakenPercent }) {
+    if (!userColors[user.id]) userColors[user.id] = getNextColorShades();
+    const colors = userColors[user.id];
+    const { icon, displayName, mainProfession } = formatUserData(user);
+
+    switch (currentMode) {
+        case 'healing':
+        case 'hps':
+            return mainBar({
+                index,
+                barColor: colors.main,
+                barPercent: healingPercent,
+                barContent: barContent['heal']({
+                    user,
+                    healingPercent,
+                }),
+                mainProfession,
+                displayName,
+                icon,
+            });
+        case 'taken':
+            return mainBar({
+                index,
+                barColor: colors.main,
+                barPercent: damageTakenPercent,
+                barContent: barContent['damageTaken']({
+                    user,
+                    damageTakenPercent,
+                }),
+                mainProfession,
+                displayName,
+                icon,
+            });
+        default:
+            return mainBar({
+                index,
+                barColor: colors.main,
+                barPercent: damagePercent,
+                barContent: barContent['damage']({
+                    user,
+                    damagePercent,
+                }),
+                mainProfession,
+                displayName,
+                icon,
+            });
+    }
+}
+
+// Update only the necessary parts of an existing row
+function updateRowData(item, { index, user, damagePercent, healingPercent, damageTakenPercent }) {
+    // figure out mode-specific main content + percent
+    let mainContent = '';
+    let mainPercent = 0;
+    const { icon, displayName, mainProfession } = formatUserData(user);
+
+    // main stats DOMs
+    const rank = item.querySelector('.rank');
+    const stats = item.querySelector('.stats');
+    const fill = item.querySelector('.stats-bar-fill');
+    const name = item.querySelector('.name');
+    const iconDOM = item.querySelector('.icon');
+
+    switch (currentMode) {
+        case 'healing':
+        case 'hps':
+            mainContent = barContent.heal({ user, healingPercent });
+            mainPercent = healingPercent;
+            break;
+        case 'taken':
+            mainContent = barContent.damageTaken({ user, damageTakenPercent });
+            mainPercent = damageTakenPercent;
+            break;
+        default:
+            mainContent = barContent.damage({ user, damagePercent });
+            mainPercent = damagePercent;
+            break;
+    }
+
+    const oldRank = rank?.textContent;
+    const oldStats = stats?.textContent;
+    const oldName = name?.textContent;
+    const oldFill = fill?.style.width;
+    const oldIconSrc = iconDOM?.src;
+    const oldIconAlt = iconDOM?.alt;
+
+    const newRank = `${index + 1}.`;
+    const newStats = mainContent;
+    const newName = displayName;
+    const newFill = `${mainPercent}%`;
+    const newIconSrc = icon;
+    const newIconAlt = mainProfession;
+
+    if (rank && newRank !== oldRank) {
+        rank.textContent = newRank;
+    }
+    if (stats && newStats !== oldStats) {
+        stats.textContent = newStats;
+    }
+    if (name && newName !== oldName) {
+        name.textContent = newName;
+    }
+    if (fill && newFill !== oldFill) {
+        fill.style.width = newFill;
+    }
+    if (iconDOM) {
+        if (newIconSrc !== oldIconSrc) {
+            iconDOM.src = newIconSrc;
+        }
+        if (newIconAlt !== oldIconAlt) {
+            iconDOM.alt = newIconAlt;
+        }
+    }
+
+    // update sub-bars content
+    const subBars = item.querySelector('.list-sub-bar');
+    if (subBars) {
+        subBars.innerHTML = initSubBarContent({ user, damagePercent, healingPercent, damageTakenPercent });
+    }
 }
 
 function renderDataList(users) {
@@ -119,7 +337,7 @@ function renderDataList(users) {
 
     // Single pass: filter + aggregate
     for (const user of users) {
-        if (!selectedClasses.has('all') && selectedClasses.size > 0) {
+        if (selectedClasses.size > 0) {
             if (!user.profession) continue;
             const professionValue = user.profession.split('(')[0].trim();
             if (!selectedClasses.has(professionValue)) continue;
@@ -131,126 +349,37 @@ function renderDataList(users) {
     }
 
     sortUsers(filteredUsers, currentMode);
-
-    // Recycle DOM
-    const existingItems = Array.from(columnsContainer.querySelectorAll('.data-item'));
+    const existing = new Map(Array.from(columnsContainer.children).map((element) => [element.dataset.key, element]));
 
     filteredUsers.forEach((user, index) => {
-        if (!userColors[user.id]) userColors[user.id] = getNextColorShades();
-        const colors = userColors[user.id];
-
+        let item = existing.get(String(user.id));
         const damagePercent = totalDamageOverall > 0 ? (user.total_damage.total / totalDamageOverall) * 100 : 0;
         const healingPercent = totalHealingOverall > 0 ? (user.total_healing.total / totalHealingOverall) * 100 : 0;
         const damageTakenPercent =
             totalDamageTakenOverall > 0 ? ((user.taken_damage || 0) / totalDamageTakenOverall) * 100 : 0;
 
-        const displayName = user.fightPoint ? `${user.name} (${user.fightPoint})` : user.name;
-        let classIconHtml = '';
-        const professionString = user.profession ? user.profession.trim() : '';
-        if (professionString) {
-            const mainProfession = professionString.split('(')[0].trim();
-            if (mainProfession !== '...' && mainProfession.length > 1 && !/^\.+$/.test(mainProfession)) {
-                const iconFileName = mainProfession.toLowerCase().replace(/ /g, '_') + '.png';
-                classIconHtml = `<img src="assets/${iconFileName}" class="class-icon" alt="${mainProfession}" onerror="this.style.display='none'">`;
-            }
-        }
-
-        let mainBarContent, mainBarPercent, mainBarColor;
-        const hasHealing = user.total_healing.total > 0 || user.total_hps > 0;
-        const hasDamageTaken = (user.taken_damage || 0) > 0;
-        const hasDamage = user.total_damage.total > 0 || user.total_dps > 0;
-
-        if (currentMode === 'healing' || currentMode === 'hps') {
-            mainBarContent = `${formatNumber(user.total_healing.total)} (${formatNumber(user.total_hps)} HPS, ${healingPercent.toFixed(1)}%)`;
-            mainBarPercent = healingPercent;
-            mainBarColor = colors.main;
-        } else if (currentMode === 'taken') {
-            mainBarContent = `${formatNumber(user.taken_damage)} (${damageTakenPercent.toFixed(1)}%)`;
-            mainBarPercent = damageTakenPercent;
-            mainBarColor = colors.main;
+        if (item) {
+            updateRowData(item, { index, user, damagePercent, healingPercent, damageTakenPercent });
+            existing.delete(user.id);
         } else {
-            mainBarContent = `${formatNumber(user.total_damage.total)} (${formatNumber(user.total_dps)} DPS, ${damagePercent.toFixed(1)}%)`;
-            mainBarPercent = damagePercent;
-            mainBarColor = colors.main;
+            item = document.createElement('li');
+            item.className = 'data-item';
+            item.dataset.key = user.id;
+            item.innerHTML = `${initMainBarContent({ index, user, damagePercent, healingPercent, damageTakenPercent })} 
+                                <div class='list-sub-bar'>
+                                    ${initSubBarContent({ user, damagePercent, healingPercent, damageTakenPercent })}
+                                </div>`;
         }
 
-        let subBarHtml = '';
-        if (currentMode === 'healing' || currentMode === 'hps') {
-            if (hasDamage) {
-                subBarHtml += `<div class="sub-bar"><div class="stats-bar-fill" data-percent="${damagePercent}" data-color="${colors.sub}"></div><div class="sub-bar-text"><strong>DMG: ${formatNumber(user.total_damage.total)} (${formatNumber(user.total_dps)} DPS, ${damagePercent.toFixed(1)}%)</strong></div></div>`;
-            }
-            if (hasDamageTaken) {
-                subBarHtml += `<div class="sub-bar"><div class="stats-bar-fill" data-percent="${damageTakenPercent}" data-color="${colors.sub}"></div><div class="sub-bar-text"><strong>DMG Taken: ${formatNumber(user.taken_damage)} (${damageTakenPercent.toFixed(1)}%)</strong></div></div>`;
-            }
-        } else if (currentMode === 'taken') {
-            if (hasDamage) {
-                subBarHtml += `<div class="sub-bar"><div class="stats-bar-fill" data-percent="${damagePercent}" data-color="${colors.sub}"></div><div class="sub-bar-text"><strong>DMG: ${formatNumber(user.total_damage.total)} (${formatNumber(user.total_dps)} DPS, ${damagePercent.toFixed(1)}%)</strong></div></div>`;
-            }
-            if (hasHealing) {
-                subBarHtml += `<div class="sub-bar"><div class="stats-bar-fill" data-percent="${healingPercent}" data-color="${colors.sub}"></div><div class="sub-bar-text"><strong>Heal: ${formatNumber(user.total_healing.total)} (${formatNumber(user.total_hps)} HPS, ${healingPercent.toFixed(1)}%)</strong></div></div>`;
-            }
-        } else {
-            if (hasDamageTaken) {
-                subBarHtml += `<div class="sub-bar"><div class="stats-bar-fill" data-percent="${damageTakenPercent}" data-color="${colors.sub}"></div><div class="sub-bar-text"><strong>DMG Taken: ${formatNumber(user.taken_damage)} (${damageTakenPercent.toFixed(1)}%)</strong></div></div>`;
-            }
-            if (hasHealing) {
-                subBarHtml += `<div class="sub-bar"><div class="stats-bar-fill" data-percent="${healingPercent}" data-color="${colors.sub}"></div><div class="sub-bar-text"><strong>Heal: ${formatNumber(user.total_healing.total)} (${formatNumber(user.total_hps)} HPS, ${healingPercent.toFixed(1)}%)</strong></div></div>`;
-            }
+        // If it's not already at position index, move it there
+        const currentAtIndex = columnsContainer.children[index];
+        if (currentAtIndex !== item) {
+            columnsContainer.insertBefore(item, currentAtIndex || null);
         }
-
-        let item = existingItems[index];
-
-        // Rebuilds if user ID changed
-        if (!item || item.dataset.userId !== user.id) {
-            if (!item) {
-                item = document.createElement('li');
-                item.className = 'data-item';
-                columnsContainer.appendChild(item);
-            }
-            item.dataset.userId = user.id;
-            item.innerHTML = `
-            <div class="main-bar">
-                <div class="stats-bar-fill"></div>
-                <div class="content">
-                    <span class="rank">${index + 1}.</span>
-                    ${classIconHtml}
-                    <span class="name">${displayName}</span>
-                    <span class="stats">${mainBarContent}</span>
-                </div>
-            </div>
-            ${subBarHtml}
-        `;
-        } else {
-            const rank = item.querySelector('.rank');
-            const name = item.querySelector('.name');
-            const stats = item.querySelector('.stats');
-
-            if (rank) rank.textContent = `${index + 1}.`;
-            if (name) name.textContent = displayName;
-            if (stats) stats.textContent = mainBarContent;
-        }
-
-        const mainBarFill = item.querySelector('.main-bar > .stats-bar-fill');
-        if (mainBarFill) {
-            mainBarFill.style.width = `${mainBarPercent}%`;
-            mainBarFill.style.backgroundColor = mainBarColor;
-        }
-
-        const subBars = item.querySelectorAll('.sub-bar > .stats-bar-fill');
-        subBars.forEach((bar) => {
-            const percent = bar.dataset.percent;
-            const color = bar.dataset.color;
-            if (percent && color) {
-                bar.style.width = `${percent}%`;
-                bar.style.backgroundColor = color;
-            }
-        });
     });
 
     // Remove excess items
-    while (columnsContainer.children.length > filteredUsers.length) {
-        columnsContainer.removeChild(columnsContainer.lastChild);
-    }
+    existing.forEach((el) => el.remove());
 }
 
 function processDataUpdate(data) {

@@ -11,6 +11,7 @@
 }
 
 .cs-wrap {
+    font-size: 12px;
     position: relative;
     display: inline-block;
     /* tokens */
@@ -26,6 +27,7 @@
 
 /* Button */
 .cs-button {
+    font-size: 12px;
     transition: 0.2s;
     display: inline-flex;
     align-items: center;
@@ -40,6 +42,7 @@
     color: #e5e7eb;
     cursor: pointer;
     padding-right: 32px; /* room for caret */
+    height: 28px;
 }
 
 .cs-button:hover {
@@ -94,7 +97,7 @@
 /* Options (with subtle separators + selected bold) */
 .cs-option {
     color: #e5e7eb;
-    padding: 10px 12px;
+    padding: 8px 10px;
     cursor: pointer;
     line-height: 1.2;
     align-items: center;
