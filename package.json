@@ -16,12 +16,9 @@
     "config": {
         "forge": {
             "packagerConfig": {
-                "name": "BPSR PSO",
+                "name": "BPSR-PSO",
                 "icon": "./resources/app.ico",
-                "extraResources": [
-                    "./resources/npcap-1.83.exe",
-                    "./README.md"
-                ]
+                "extraResources": []
             },
             "makers": [
                 {
@@ -38,10 +35,7 @@
                         "setupIcon": "./resources/app.ico",
                         "loadingGif": "./resources/installer.gif",
                         "createDesktopShortcut": true,
-                        "extraFiles": [
-                            "./resources/npcap-1.83.exe",
-                            "./README.md"
-                        ]
+                        "extraFiles": []
                     }
                 }
             ]

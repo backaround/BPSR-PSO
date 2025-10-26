@@ -1,7 +1,10 @@
 import { exec } from 'child_process';
+import { promisify } from 'util';
 import cap from 'cap';
 
-const VIRTUAL_KEYWORDS = ['zerotier', 'vmware', 'hyper-v', 'virtual', 'loopback', 'tap', 'bluetooth', 'wan miniport'];
+const execAsync = promisify(exec);
+
+const VIRTUAL_KEYWORDS = ['zerotier', 'vmware', 'virtual', 'loopback', 'veth', 'docker', 'virbr', 'br-', 'vnet'];
 
 /**
  * Checks if a network adapter is virtual based on its name.
@@ -21,10 +24,20 @@ function isVirtual(name) {
  */
 export function detectTraffic(deviceIndex, devices) {
     return new Promise((resolve) => {
+        const device = devices[deviceIndex];
+
+        if (!device?.name) {
+            console.error(`Invalid device index: ${deviceIndex}`);
+            resolve(0);
+            return;
+        }
+
         let count = 0;
         let c;
+        let timeoutId;
 
         const cleanup = () => {
+            if (timeoutId) clearTimeout(timeoutId);
             if (c) {
                 try {
                     c.close();
@@ -34,149 +47,120 @@ export function detectTraffic(deviceIndex, devices) {
             }
         };
 
-        const timeoutId = setTimeout(() => {
-            cleanup();
-            resolve(count);
-        }, 3000);
-
         try {
-            // Check if the device exists before proceeding
-            if (!devices[deviceIndex] || !devices[deviceIndex].name) {
-                console.error(`Invalid device index: ${deviceIndex}`);
-                clearTimeout(timeoutId);
+            c = new cap.Cap();
+            const buffer = Buffer.alloc(65535);
+
+            console.log(`Opening device: ${device.name}`);
+            const openResult = c.open(device.name, 'ip and tcp', 1024 * 1024, buffer);
+
+            if (!openResult) {
+                console.warn(`Failed to open device ${device.name}`);
+                cleanup();
                 resolve(0);
                 return;
             }
 
-            c = new cap.Cap();
-            const buffer = Buffer.alloc(65535);
+            c.on('packet', () => count++);
 
-            console.log(`Attempting to open device: ${devices[deviceIndex].name}`);
-            const openResult = c.open(devices[deviceIndex].name, 'ip and tcp', 1024 * 1024, buffer);
-            console.log(`Open result for ${devices[deviceIndex].name}: ${openResult}`);
-
-            if (openResult) {
-                // Check if open was successful (returns a string on success)
-                try {
-                    c.on('packet', () => {
-                        try {
-                            count++;
-                        } catch (e) {
-                            console.error('An error occurred inside the packet handler:', e);
-                        }
-                    });
-                    console.log('in');
-                } catch (e) {
-                    console.error(`Failed to attach packet listener to device ${devices[deviceIndex].name}:`, e);
-                    cleanup();
-                    clearTimeout(timeoutId);
-                    resolve(0);
-                }
-            } else {
-                console.warn(`Failed to open device ${devices[deviceIndex].name}. Result was:`, openResult);
+            timeoutId = setTimeout(() => {
                 cleanup();
-                clearTimeout(timeoutId);
-                resolve(0);
-            }
+                resolve(count);
+            }, 3000);
         } catch (e) {
             console.error(
-                `A critical error occurred while attempting to open device ${devices[deviceIndex]?.name || 'N/A'}:`,
-                'This may be due to a lack of administrator privileges. Please try running the application as an administrator.',
+                `Failed to open device ${device.name}:`,
+                'Ensure you have CAP_NET_RAW capability or run with sudo.',
                 e
             );
             cleanup();
-            clearTimeout(timeoutId);
             resolve(0);
         }
     });
 }
 
+/**
+ * Gets active routes from Linux routing table.
+ * @returns {Promise<Array>} Array of route objects.
+ */
 async function getActiveRoutes() {
-    // get route print output
-    const stdout = await new Promise((resolve, reject) => {
-        exec('route print 0.0.0.0', (error, stdout) => {
-            if (error) {
-                reject(error);
+    const { stdout } = await execAsync('ip route show');
+    const lines = stdout.split('\n').filter((line) => line.trim());
+
+    return lines
+        .map((line) => {
+            const parts = line.trim().split(/\s+/);
+            const route = {};
+
+            // Parse "default via 192.168.1.1 dev eth0" format
+            if (parts[0] === 'default') {
+                route.destination = '0.0.0.0';
+                const viaIdx = parts.indexOf('via');
+                const devIdx = parts.indexOf('dev');
+                if (viaIdx !== -1) route.gateway = parts[viaIdx + 1];
+                if (devIdx !== -1) route.interface = parts[devIdx + 1];
             } else {
-                resolve(stdout);
+                // Parse "192.168.1.0/24 dev eth0 proto kernel scope link src 192.168.1.100"
+                const [network] = parts[0].split('/');
+                route.destination = network;
+                const devIdx = parts.indexOf('dev');
+                if (devIdx !== -1) route.interface = parts[devIdx + 1];
             }
-        });
-    });
 
-    let result = [];
-    const lines = stdout.split(/\r?\n/);
-
-    let start = -1;
-    let end = -1;
-
-    // find "Active Routes:" start
-    for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes('Active Routes:')) {
-            start = i + 1; // the actual data starts after this line
-        } else if (start !== -1 && lines[i].includes('=====')) {
-            end = i;
-            break;
-        }
-    }
-
-    if (start === -1 || end === -1) return [];
-
-    // slice out the relevant lines, filter blanks
-    const routeLines = lines.slice(start, end).filter((l) => l.trim() !== '');
-
-    // optional: parse into objects
-    for (let i = 1; i < routeLines.length; i++) {
-        const parts = routeLines[i].trim().split(/\s+/);
-        result.push({
-            destination: parts[0],
-            netmask: parts[1],
-            gateway: parts[2],
-            interface: parts[3],
-            metric: parts[4] ? parseInt(parts[4], 10) : undefined,
-        });
-    }
-
-    return result;
+            return route;
+        })
+        .filter((route) => route.interface);
 }
 
-function getIp(routes) {
-    // Try to find VPN route (0.0.0.0/1 or 128.0.0.0/1)
-    const vpn = routes.find(
-        (r) =>
-            (r.destination === '0.0.0.0' && r.netmask === '128.0.0.0') ||
-            (r.destination === '128.0.0.0' && r.netmask === '128.0.0.0')
-    );
-    if (vpn) return vpn.interface;
+/**
+ * Extracts the default interface name from routes.
+ * @param {Array} routes Array of route objects.
+ * @returns {string|null} The interface name.
+ */
+function getDefaultInterface(routes) {
+    const defaultRoute = routes.find((r) => r.destination === '0.0.0.0');
+    return defaultRoute?.interface || null;
+}
 
-    // Else, return the normal default route (0.0.0.0/0)
-    const normal = routes.find((r) => r.destination === '0.0.0.0' && r.netmask === '0.0.0.0');
-    return normal ? normal.interface : null;
+/**
+ * Finds any tap/tun interface in the routing table.
+ * @param {Array} routes Array of route objects.
+ * @returns {string|null} The tap/tun interface name, or null if none found.
+ */
+function getTapTunInterface(routes) {
+    // Linux - find any tap/tun interface in the routing table
+    const vpnRoute = routes.find(
+        (r) => r.interface && (r.interface.startsWith('tap') || r.interface.startsWith('tun'))
+    );
+    return vpnRoute?.interface || null;
 }
 
 /**
  * Finds the default network device using the system's route table.
- * This function is specifically for Windows.
+ * Prefers tap/tun interfaces if present (for VPN game routing).
  * @param {Object} devices A map of network devices.
  * @returns {Promise<number|undefined>} A promise that resolves with the device index or undefined.
  */
 export async function findByRoute(devices) {
     try {
         const routes = await getActiveRoutes();
-        const defaultInterface = getIp(routes);
 
-        if (!defaultInterface) {
-            return undefined;
+        // Check for tap/tun interfaces
+        const vpnInterface = getTapTunInterface(routes);
+        if (vpnInterface) {
+            const vpnDevice = Object.keys(devices).find((key) => devices[key].name === vpnInterface);
+            if (vpnDevice) {
+                return parseInt(vpnDevice, 10);
+            }
         }
 
-        const targetInterface = Object.keys(devices).find((key) =>
-            devices[key].addresses.find((address) => address.addr === defaultInterface)
-        );
+        // Fall back to default route
+        const defaultInterface = getDefaultInterface(routes);
+        if (!defaultInterface) return undefined;
 
-        if (!targetInterface) {
-            return undefined;
-        }
+        const targetInterface = Object.keys(devices).find((key) => devices[key].name === defaultInterface);
 
-        return parseInt(targetInterface, 10);
+        return targetInterface ? parseInt(targetInterface, 10) : undefined;
     } catch (error) {
         console.error('Failed to find device by route:', error);
         return undefined;
@@ -189,22 +173,10 @@ export async function findByRoute(devices) {
  * @returns {Promise<number|undefined>} The index of the default network device.
  */
 export async function findDefaultNetworkDevice(devices) {
-    // console.log('Auto detecting default network interface via route table...');
     try {
-        const routeIndex = await findByRoute(devices);
-
-        // if (routeIndex !== undefined) {
-        //     console.log(`Using adapter from route table: ${routeIndex} - ${devices[routeIndex].description}`);
-        // } else {
-        //     console.log('Could not find a default network interface via route table.');
-        // }
-
-        return routeIndex;
+        return await findByRoute(devices);
     } catch (error) {
-        console.error(
-            'An error occurred during device lookup. Please ensure your system is properly configured.',
-            error
-        );
+        console.error('Error during device lookup:', error);
         return undefined;
     }
 }
