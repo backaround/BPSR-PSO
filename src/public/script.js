@@ -108,8 +108,8 @@ function sortUsers(users, mode) {
 }
 
 function updateAll() {
-    const usersArray = Object.values(allUsers).filter((u) => u.total_dps > 0 || u.total_hps > 0);
-    scheduleRenderDataList(usersArray);
+    // const usersArray = Object.values(allUsers).filter((u) => u.total_dps > 0 || u.total_hps > 0);
+    scheduleRenderDataList(Object.values(allUsers));
 }
 
 const barContent = {
@@ -325,7 +325,12 @@ function updateRowData(item, { index, user, damagePercent, healingPercent, damag
     // update sub-bars content
     const subBars = item.querySelector('.list-sub-bar');
     if (subBars) {
-        subBars.innerHTML = initSubBarContent({ user, damagePercent, healingPercent, damageTakenPercent });
+        const html = initSubBarContent({ user, damagePercent, healingPercent, damageTakenPercent });
+
+        if (subBars.__htmlCache != html) {
+            subBars.innerHTML = html;
+            subBars.__htmlCache = html;
+        }
     }
 }
 
@@ -337,11 +342,14 @@ function renderDataList(users) {
 
     // Single pass: filter + aggregate
     for (const user of users) {
+        if (user.total_dps <= 0 && user.total_hps <= 0) continue;
+
         if (selectedClasses.size > 0) {
             if (!user.profession) continue;
-            const professionValue = user.profession.split('(')[0].trim();
-            if (!selectedClasses.has(professionValue)) continue;
+            const { mainProfession } = formatUserData(user);
+            if (!selectedClasses.has(mainProfession)) continue;
         }
+
         filteredUsers.push(user);
         totalDamageOverall += user.total_damage.total;
         totalHealingOverall += user.total_healing.total;
@@ -407,6 +415,7 @@ function processDataUpdate(data) {
 
         allUsers[userId] = updatedUser;
     }
+
     updateAll();
 }
 
