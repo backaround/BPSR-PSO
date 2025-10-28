@@ -3,49 +3,64 @@
 **Forked from:** https://github.com/dmlgzs/StarResonanceDamageCounter
 
 Blue Protocol: Star Resonance - Per Second Overlay
-Provides a useful GUI to track DPS / HPS for nearby players
+Provides a useful GUI to track DPS / HPS / DMG Taken for nearby players
 
 ## About the Project
 
-This is a standalone application and does not interface with BPSR or modify any of its files. It analyzes packet while in transit. 
+This is a standalone application and does not interface with BPSR or modify any of its files. It analyzes packet while in transit.
 
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
-### Prerequisites
+### Installation
+
+If you're looking for Linux, instructions can be found here:
+<https://github.com/backaround/BPSR-PSO/tree/linux>
+
+**_Compiling from source:_**
 
 You'll need to have the following software installed:
 
-* **Node.js**: <https://nodejs.org/>
-* **npm**: Comes bundled with Node.js.
-* **Npcap**: The installer is located in the `/resources` folder of this repository.
+- **Build Tools for Visual Studio 2022 (Only Desktop development with C++)**:
+  <https://visualstudio.microsoft.com/downloads/?q=build+tools>
+- **Node.js**:
+  <https://nodejs.org/>
+- **npm**:
+  Bundled with Node.js.
+- **Npcap**:
+  The installer is located in the `/resources` folder of this repository.
 
-### Installation
+After all of this has been done
 
 1.  **Clone the repository:**
+
     ```bash
     git clone https://github.com/Chase-Simmons/BPSR-PSO.git
     ```
 
 2.  **Navigate into the project directory:**
+
     ```bash
     cd BPSR-PSO
     ```
 
 3.  **Install Npcap:**
-    * Navigate to the `resources` folder: `cd resources`
-    * Run the Npcap installer. Be sure to select the option to **"Install Npcap in WinPcap API-compatible Mode"** during installation.
-    * After installation, return to the project root: `cd ..`
+    - Navigate to the `resources` folder: `cd resources`
+    - Run the Npcap installer. Be sure to select the option to **"Install Npcap in WinPcap API-compatible Mode"** during installation.
+    - After installation, return to the project root: `cd ..`
 
 4.  **Install Node.js dependencies:**
+
     ```bash
     npm install
     ```
 
-## Running the Application
+5.  **Starting the application in the project root:**
+    ```bash
+    npm start
+    ```
 
-To start the application, run the following command from the project root:
+**_Using executable (prebuilt):_**
 
-```bash
-npm start
+1. **Download & run the prebuilt on 'Releases'**
