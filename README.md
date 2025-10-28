@@ -43,10 +43,11 @@ You'll need to have the following software installed:
     npm install
     ```
 
-4.  **Giving permission:**
+4.  **Giving permissions:**
     ```bash
     sudo setcap cap_net_raw,cap_net_admin=eip node_modules/electron/dist/electron
-    getcap node_modules/electron/dist/electron
+    sudo chown root:root node_modules/electron/dist/chrome-sandbox
+    sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
     ```
 5.  **Verify:**
     ```bash
