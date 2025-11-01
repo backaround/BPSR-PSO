@@ -136,8 +136,8 @@ function subBar({ barContent, icon, type }) {
 
 function mainBar({ barColor, barPercent, barContent, displayName, mainProfession, iconClass, iconMain, index }) {
     return `
-            <div class="stats-bar-fill" style="width: ${barPercent}%; background-color: ${barColor};"></div>
             <div class="main-bar">
+                 <div class="stats-bar-fill" style="width: ${barPercent}%; background-color: ${barColor};"></div>
                 <div class="content">
                     <span class="rank">${index + 1}</span>
                     <img src="${iconClass}" class="class-icon icon" alt="${mainProfession}" onerror="this.style.display='none'">

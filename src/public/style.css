@@ -346,11 +346,10 @@ body {
 }
 
 .data-item .main-bar .rank {
-    padding: 2px 5.5px;
+    padding: 1px 4.5px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(0, 0, 0, 0.3) !important;
     font-size: 12px;
     font-weight: 600;
     border-radius: 6px;
