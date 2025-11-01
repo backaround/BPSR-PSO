@@ -34,6 +34,7 @@ const pauseButton = document.getElementById('pauseButton');
 const serverStatus = document.getElementById('serverStatus');
 const opacitySlider = document.getElementById('opacitySlider');
 
+let isCurrentModeChanged = false;
 let allUsers = {};
 let userColors = {};
 let isPaused = false;
@@ -126,33 +127,49 @@ const barContent = {
 
 function subBar({ barContent, icon, type }) {
     return `<div class="sub-bar">
-                <img src="${icon}" class="icon-stat" onerror="this.style.display='none'">
                 <div class="sub-bar-text" data-type="${type}">
                    ${barContent}
+                </div>
+                <img src="${icon}" class="icon-stat" onerror="this.style.display='none'">
+            </div>`;
+}
+
+function mainBar({ barColor, barPercent, barContent, displayName, mainProfession, iconClass, iconMain, index }) {
+    return `
+            <div class="stats-bar-fill" style="width: ${barPercent}%; background-color: ${barColor};"></div>
+            <div class="main-bar">
+                <div class="content">
+                    <span class="rank">${index + 1}.</span>
+                    <img src="${iconClass}" class="class-icon icon" alt="${mainProfession}" onerror="this.style.display='none'">
+                    <span class="name">${displayName}</span>
+                    <div class='stats-content'>
+                        <span class="stats">${barContent}</span>
+                        <img src="${iconMain}" class="icon-stat-main" onerror="this.style.display='none'">
+                    </div>
                 </div>
             </div>`;
 }
 
-function mainBar({ barColor, barPercent, barContent, displayName, mainProfession, icon, index }) {
-    return `<div class="main-bar">
-                <div class="stats-bar-fill" style="width: ${barPercent}%; background-color: ${barColor};"></div>
-                <div class="content">
-                    <span class="rank">${index + 1}.</span>
-                    <img src="${icon}" class="class-icon icon" alt="${mainProfession}" onerror="this.style.display='none'">
-                    <span class="name">${displayName}</span>
-                    <span class="stats">${barContent}</span>
+function hpBar({ currentHp, maxHp }) {
+    return `<div class="hp-bar">
+                <div class="hp-bar__fill"></div>
+                <div class="hp-bar__content">
+                    <img src="assets/heart.svg" class='hp-bar__icon' onerror="this.style.display='none'">
+                    <span class="hp-bar__label">
+                        ${parseTextHP(currentHp, maxHp)}
+                    </span>
                 </div>
             </div>`;
 }
 
 function initSubBarContent({ user, damagePercent, healingPercent, damageTakenPercent }) {
     function initSubBar(types) {
-        const hasDamage = user.total_damage.total > 0 || user.total_dps > 0;
-        const hasDamageTaken = (user.taken_damage || 0) > 0;
-        const hasHealing = user.total_healing.total > 0 || user.total_hps > 0;
+        // const hasDamage = user.total_damage.total > 0 || user.total_dps > 0;
+        // const hasDamageTaken = (user.taken_damage || 0) > 0;
+        // const hasHealing = user.total_healing.total > 0 || user.total_hps > 0;
         let result = '';
 
-        if (types.includes('damage') && hasDamage)
+        if (types.includes('damage'))
             result += subBar({
                 type: 'damage',
                 icon: 'assets/swords.svg',
@@ -161,16 +178,8 @@ function initSubBarContent({ user, damagePercent, healingPercent, damageTakenPer
                     damagePercent,
                 })}`,
             });
-        if (types.includes('damageTaken') && hasDamageTaken)
-            result += subBar({
-                type: 'damageTaken',
-                icon: 'assets/shield-checkered.svg',
-                barContent: `${barContent['damageTaken']({
-                    user,
-                    damageTakenPercent,
-                })}`,
-            });
-        if (types.includes('heal') && hasHealing)
+
+        if (types.includes('heal'))
             result += subBar({
                 type: 'heal',
                 icon: 'assets/heart-plus.svg',
@@ -180,17 +189,27 @@ function initSubBarContent({ user, damagePercent, healingPercent, damageTakenPer
                 })}`,
             });
 
+        if (types.includes('damageTaken'))
+            result += subBar({
+                type: 'damageTaken',
+                icon: 'assets/shield-checkered.svg',
+                barContent: `${barContent['damageTaken']({
+                    user,
+                    damageTakenPercent,
+                })}`,
+            });
+
         return result;
     }
 
     switch (currentMode) {
         case 'healing':
         case 'hps':
-            return initSubBar(['damage', 'damageTaken']);
+            return initSubBar(['damageTaken', 'damage']);
         case 'taken':
-            return initSubBar(['damage', 'heal']);
+            return initSubBar(['heal', 'damage']);
         default:
-            return initSubBar(['damageTaken', 'heal']);
+            return initSubBar(['heal', 'damageTaken']);
     }
 }
 
@@ -226,7 +245,8 @@ function initMainBarContent({ index, user, damagePercent, healingPercent, damage
                 }),
                 mainProfession,
                 displayName,
-                icon,
+                iconClass: icon,
+                iconMain: 'assets/heart-plus.svg',
             });
         case 'taken':
             return mainBar({
@@ -239,7 +259,8 @@ function initMainBarContent({ index, user, damagePercent, healingPercent, damage
                 }),
                 mainProfession,
                 displayName,
-                icon,
+                iconClass: icon,
+                iconMain: 'assets/shield-checkered.svg',
             });
         default:
             return mainBar({
@@ -252,7 +273,8 @@ function initMainBarContent({ index, user, damagePercent, healingPercent, damage
                 }),
                 mainProfession,
                 displayName,
-                icon,
+                iconClass: icon,
+                iconMain: 'assets/swords.svg',
             });
     }
 }
@@ -262,6 +284,7 @@ function updateRowData(item, { index, user, damagePercent, healingPercent, damag
     // figure out mode-specific main content + percent
     let mainContent = '';
     let mainPercent = 0;
+    let mainIconMode = '';
     const { icon, displayName, mainProfession } = formatUserData(user);
 
     // main stats DOMs
@@ -269,21 +292,29 @@ function updateRowData(item, { index, user, damagePercent, healingPercent, damag
     const stats = item.querySelector('.stats');
     const fill = item.querySelector('.stats-bar-fill');
     const name = item.querySelector('.name');
-    const iconDOM = item.querySelector('.icon');
+    const iconClass = item.querySelector('.icon');
+    const iconMode = item.querySelector('.icon-stat-main');
+    const hpBar = item.querySelector('.hp-bar');
+    const contentHeal = barContent.heal({ user, healingPercent });
+    const contentDamageTaken = barContent.damageTaken({ user, damageTakenPercent });
+    const contentDamage = barContent.damage({ user, damagePercent });
 
     switch (currentMode) {
         case 'healing':
         case 'hps':
-            mainContent = barContent.heal({ user, healingPercent });
+            mainContent = contentHeal;
             mainPercent = healingPercent;
+            mainIconMode = 'assets/heart-plus.svg';
             break;
         case 'taken':
-            mainContent = barContent.damageTaken({ user, damageTakenPercent });
+            mainContent = contentDamageTaken;
             mainPercent = damageTakenPercent;
+            mainIconMode = 'assets/shield-checkered.svg';
             break;
         default:
-            mainContent = barContent.damage({ user, damagePercent });
+            mainContent = contentDamage;
             mainPercent = damagePercent;
+            mainIconMode = 'assets/swords.svg';
             break;
     }
 
@@ -291,8 +322,9 @@ function updateRowData(item, { index, user, damagePercent, healingPercent, damag
     const oldStats = stats?.textContent;
     const oldName = name?.textContent;
     const oldFill = fill?.style.width;
-    const oldIconSrc = iconDOM?.src;
-    const oldIconAlt = iconDOM?.alt;
+    const oldIconSrc = iconClass?.src;
+    const oldIconAlt = iconClass?.alt;
+    const oldIconModeSrc = iconMode.src;
 
     const newRank = `${index + 1}.`;
     const newStats = mainContent;
@@ -300,6 +332,7 @@ function updateRowData(item, { index, user, damagePercent, healingPercent, damag
     const newFill = `${mainPercent}%`;
     const newIconSrc = icon;
     const newIconAlt = mainProfession;
+    const newIconModeSrc = mainIconMode;
 
     if (rank && newRank !== oldRank) {
         rank.textContent = newRank;
@@ -313,23 +346,32 @@ function updateRowData(item, { index, user, damagePercent, healingPercent, damag
     if (fill && newFill !== oldFill) {
         fill.style.width = newFill;
     }
-    if (iconDOM) {
+    if (iconClass) {
         if (newIconSrc !== oldIconSrc) {
-            iconDOM.src = newIconSrc;
+            iconClass.src = newIconSrc;
         }
         if (newIconAlt !== oldIconAlt) {
-            iconDOM.alt = newIconAlt;
+            iconClass.alt = newIconAlt;
+        }
+    }
+    if (iconMode) {
+        if (newIconModeSrc !== oldIconModeSrc) {
+            iconMode.src = newIconModeSrc;
         }
     }
 
+    if (hpBar) {
+        setHP(hpBar, user.hp, user.max_hp);
+    }
+
     // update sub-bars content
-    const subBars = item.querySelector('.list-sub-bar');
-    if (subBars) {
+    const subInfo = item.querySelector('.right-data');
+    if (subInfo) {
         const html = initSubBarContent({ user, damagePercent, healingPercent, damageTakenPercent });
 
-        if (subBars.__htmlCache != html) {
-            subBars.innerHTML = html;
-            subBars.__htmlCache = html;
+        if (subInfo.__htmlCache != html) {
+            subInfo.innerHTML = html;
+            subInfo.__htmlCache = html;
         }
     }
 }
@@ -373,9 +415,14 @@ function renderDataList(users) {
             item = document.createElement('li');
             item.className = 'data-item';
             item.dataset.key = user.id;
-            item.innerHTML = `${initMainBarContent({ index, user, damagePercent, healingPercent, damageTakenPercent })} 
-                                <div class='list-sub-bar'>
-                                    ${initSubBarContent({ user, damagePercent, healingPercent, damageTakenPercent })}
+            item.innerHTML = `${initMainBarContent({ index, user, damagePercent, healingPercent, damageTakenPercent })}
+                                <div class='sub-info'>    
+                                    <div class="left-data">
+                                        ${hpBar({ currentHp: user.hp, maxHp: user.maxHp })}
+                                    </div>
+                                    <div class="right-data">   
+                                        ${initSubBarContent({ user, damagePercent, healingPercent, damageTakenPercent })}
+                                    </div>
                                 </div>`;
         }
 

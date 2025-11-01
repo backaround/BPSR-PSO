@@ -315,6 +315,7 @@ body {
 }
 
 .data-item {
+    position: relative;
     background-color: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 6px;
@@ -373,9 +374,15 @@ body {
     filter: invert(1) sepia(0) saturate(0) hue-rotate(180deg) brightness(1.2);
 }
 
+.icon-stat-main {
+    width: 13px;
+    height: 13px;
+    opacity: 1;
+    filter: invert(1) sepia(0) saturate(0) hue-rotate(180deg) brightness(1.2);
+}
+
 .sub-bar {
     position: relative;
-    height: 14px;
     display: flex;
     align-items: center;
     overflow: hidden;
@@ -385,7 +392,7 @@ body {
 .sub-bar-text {
     position: relative;
     z-index: 2;
-    padding: 2.5px 8px;
+    padding: 2px 4px;
     padding-left: 4px;
     color: #ccc;
     font-size: 11px;
@@ -398,8 +405,30 @@ body {
     box-sizing: border-box;
 }
 
-.list-sub-bar {
+.stats-content {
+    display: flex;
+    gap: 4px;
+}
+
+.sub-info {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
     background-color: rgba(0, 0, 0, 0.3);
+    padding: 0px 8px;
+    z-index: 1;
+}
+
+.sub-info .right-data {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.sub-info .left-data {
+    padding: 8px 0px;
+    display: flex;
+    height: 100%;
 }
 
 .stats-bar-fill {
@@ -408,7 +437,7 @@ body {
     left: 0;
     height: 100%;
     opacity: 0.6;
-    z-index: 1;
+    z-index: 0;
     transition: width 1s ease;
     will-change: width;
 }
