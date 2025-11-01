@@ -36,6 +36,9 @@ body {
 
 :root {
     --main-bg-opacity: 0.8;
+    --green-gradient: linear-gradient(135deg, #00c853, #aeea00);
+    --blue-gradient: linear-gradient(135deg, #2962ff, #00b0ff);
+    --red-gradient: linear-gradient(135deg, #ff3c3c, #ff7b00);
 }
 
 .icon-button {
@@ -366,7 +369,7 @@ body {
 }
 
 .data-item:nth-child(3) .main-bar .rank {
-    background-color: #7e5918 !important;
+    background-color: #ce8946 !important;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
@@ -384,10 +387,11 @@ body {
 }
 
 .class-icon {
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
     object-fit: contain;
     flex-shrink: 0;
+    filter: brightness(1000%) saturate(0%);
 }
 
 .name {
@@ -472,6 +476,10 @@ body {
     z-index: 0;
     transition: width 1s ease;
     will-change: width;
+}
+
+.stats {
+    font-size: 600;
 }
 
 .custom-sort-select {

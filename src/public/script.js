@@ -11,16 +11,25 @@ const colorHues = [
 ];
 
 let colorIndex = 0;
-function getNextColorShades() {
-    const h = colorHues[colorIndex];
-    colorIndex = (colorIndex + 1) % colorHues.length;
-    const s = 90,
-        l_main = 30,
-        l_sub = 20;
-    return {
-        main: `hsl(${h}, ${s}%, ${l_main}%)`,
-        sub: `hsl(${h}, ${s}%, ${l_sub}%)`,
-    };
+function getColorShades(currentMode) {
+    // const h = colorHues[colorIndex];
+    // colorIndex = (colorIndex + 1) % colorHues.length;
+    // const s = 90,
+    //     l_main = 30,
+    //     l_sub = 20;
+    // return {
+    //     main: `hsl(${h}, ${s}%, ${l_main}%)`,
+    //     sub: `hsl(${h}, ${s}%, ${l_sub}%)`,
+    // };
+    switch (currentMode) {
+        case 'healing':
+        case 'hps':
+            return 'var(--green-gradient)';
+        case 'taken':
+            return 'var(--blue-gradient)';
+        default:
+            return 'var(--red-gradient)';
+    }
 }
 
 const columnsContainer = document.getElementById('columnsContainer');
@@ -137,7 +146,7 @@ function subBar({ barContent, icon, type }) {
 function mainBar({ barColor, barPercent, barContent, displayName, mainProfession, iconClass, iconMain, index }) {
     return `
             <div class="main-bar">
-                 <div class="stats-bar-fill" style="width: ${barPercent}%; background-color: ${barColor};"></div>
+                 <div class="stats-bar-fill" style="width: ${barPercent}%; background: ${barColor};"></div>
                 <div class="content">
                     <span class="rank">${index + 1}</span>
                     <img src="${iconClass}" class="class-icon icon" alt="${mainProfession}" onerror="this.style.display='none'">
@@ -228,8 +237,7 @@ function formatUserData(user) {
 }
 
 function initMainBarContent({ index, user, damagePercent, healingPercent, damageTakenPercent }) {
-    if (!userColors[user.id]) userColors[user.id] = getNextColorShades();
-    const colors = userColors[user.id];
+    const color = getColorShades(currentMode);
     const { icon, displayName, mainProfession } = formatUserData(user);
 
     switch (currentMode) {
@@ -237,7 +245,7 @@ function initMainBarContent({ index, user, damagePercent, healingPercent, damage
         case 'hps':
             return mainBar({
                 index,
-                barColor: colors.main,
+                barColor: color,
                 barPercent: healingPercent,
                 barContent: barContent['heal']({
                     user,
@@ -251,7 +259,7 @@ function initMainBarContent({ index, user, damagePercent, healingPercent, damage
         case 'taken':
             return mainBar({
                 index,
-                barColor: colors.main,
+                barColor: color,
                 barPercent: damageTakenPercent,
                 barContent: barContent['damageTaken']({
                     user,
@@ -265,7 +273,7 @@ function initMainBarContent({ index, user, damagePercent, healingPercent, damage
         default:
             return mainBar({
                 index,
-                barColor: colors.main,
+                barColor: color,
                 barPercent: damagePercent,
                 barContent: barContent['damage']({
                     user,
@@ -285,6 +293,7 @@ function updateRowData(item, { index, user, damagePercent, healingPercent, damag
     let mainContent = '';
     let mainPercent = 0;
     let mainIconMode = '';
+    const color = getColorShades(currentMode);
     const { icon, displayName, mainProfession } = formatUserData(user);
 
     // main stats DOMs
@@ -322,6 +331,7 @@ function updateRowData(item, { index, user, damagePercent, healingPercent, damag
     const oldStats = stats?.textContent;
     const oldName = name?.textContent;
     const oldFill = fill?.style.width;
+    const oldFillBackground = fill.style.background;
     const oldIconSrc = iconClass?.src;
     const oldIconAlt = iconClass?.alt;
     const oldIconModeSrc = iconMode.src;
@@ -330,6 +340,7 @@ function updateRowData(item, { index, user, damagePercent, healingPercent, damag
     const newStats = mainContent;
     const newName = displayName;
     const newFill = `${mainPercent}%`;
+    const newFillBackground = color;
     const newIconSrc = icon;
     const newIconAlt = mainProfession;
     const newIconModeSrc = mainIconMode;
@@ -343,8 +354,13 @@ function updateRowData(item, { index, user, damagePercent, healingPercent, damag
     if (name && newName !== oldName) {
         name.textContent = newName;
     }
-    if (fill && newFill !== oldFill) {
-        fill.style.width = newFill;
+    if (fill) {
+        if (newFill !== oldFill) {
+            fill.style.width = newFill;
+        }
+        if (newFillBackground !== oldFillBackground) {
+            fill.style.background = newFillBackground;
+        }
     }
     if (iconClass) {
         if (newIconSrc !== oldIconSrc) {
