@@ -39,7 +39,7 @@ function setHP(target, current, max) {
         icon.src = 'assets/heart.svg';
     }
 
-    fill.style.backgroundColor = color;
+    fill.style.background = color;
 
     const content = parseTextHP(current, max);
     if (content !== label.textContent) label.textContent = content;

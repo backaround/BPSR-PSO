@@ -1,7 +1,7 @@
 .hp-bar {
-    --hp-good: rgb(27, 145, 70);
-    --hp-warning: rgb(174, 134, 14);
-    --hp-bad: rgb(171, 35, 35);
+    --hp-good: var(--green-gradient);
+    --hp-warning: var(--yellow-gradient);
+    --hp-bad: var(--red-gradient);
     width: 180px;
     height: 18px;
     background-color: rgba(255, 255, 255, 0.2);
@@ -34,7 +34,8 @@
     left: 0;
     height: 100%;
     width: 100%;
-    background-color: var(--hp-good);
+    opacity: 0.5;
+    background: var(--hp-good);
     transition: width 0.3s ease;
 }
 

@@ -39,6 +39,7 @@ body {
     --green-gradient: linear-gradient(135deg, #00c853, #aeea00);
     --blue-gradient: linear-gradient(135deg, #2962ff, #00b0ff);
     --red-gradient: linear-gradient(135deg, #ff3c3c, #ff7b00);
+    --yellow-gradient: linear-gradient(135deg, #ffd600, #ffea00);
 }
 
 .icon-button {
@@ -343,7 +344,7 @@ body {
 
 .main-bar {
     position: relative;
-    height: 24px;
+    height: 28px;
     display: flex;
     align-items: center;
 }
@@ -479,7 +480,7 @@ body {
 }
 
 .stats {
-    font-size: 600;
+    font-weight: 600;
 }
 
 .custom-sort-select {
