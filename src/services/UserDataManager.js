@@ -188,6 +188,11 @@ class UserDataManager {
         this.logLock.release();
     }
 
+    setIsCurrentUserUuid(uid) {
+        const user = this.getUser(uid);
+        user.setIsCurrentUserUuid();
+    }
+
     setProfession(uid, profession) {
         const user = this.getUser(uid);
         if (user.profession !== profession) {

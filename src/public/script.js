@@ -139,7 +139,7 @@ function mainBar({ barColor, barPercent, barContent, displayName, mainProfession
             <div class="stats-bar-fill" style="width: ${barPercent}%; background-color: ${barColor};"></div>
             <div class="main-bar">
                 <div class="content">
-                    <span class="rank">${index + 1}.</span>
+                    <span class="rank">${index + 1}</span>
                     <img src="${iconClass}" class="class-icon icon" alt="${mainProfession}" onerror="this.style.display='none'">
                     <span class="name">${displayName}</span>
                     <div class='stats-content'>
@@ -326,7 +326,7 @@ function updateRowData(item, { index, user, damagePercent, healingPercent, damag
     const oldIconAlt = iconClass?.alt;
     const oldIconModeSrc = iconMode.src;
 
-    const newRank = `${index + 1}.`;
+    const newRank = `${index + 1}`;
     const newStats = mainContent;
     const newName = displayName;
     const newFill = `${mainPercent}%`;
@@ -403,6 +403,7 @@ function renderDataList(users) {
 
     filteredUsers.forEach((user, index) => {
         let item = existing.get(String(user.id));
+        const isCurrentUserUuid = user.isCurrentUserUuid;
         const damagePercent = totalDamageOverall > 0 ? (user.total_damage.total / totalDamageOverall) * 100 : 0;
         const healingPercent = totalHealingOverall > 0 ? (user.total_healing.total / totalHealingOverall) * 100 : 0;
         const damageTakenPercent =
@@ -413,7 +414,7 @@ function renderDataList(users) {
             existing.delete(user.id);
         } else {
             item = document.createElement('li');
-            item.className = 'data-item';
+            item.className = `data-item ${isCurrentUserUuid ? 'main-character' : ''}`;
             item.dataset.key = user.id;
             item.innerHTML = `${initMainBarContent({ index, user, damagePercent, healingPercent, damageTakenPercent })}
                                 <div class='sub-info'>    
