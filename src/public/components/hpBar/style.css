@@ -1,0 +1,50 @@
+.hp-bar {
+    --hp-good: var(--green-gradient);
+    --hp-warning: var(--yellow-gradient);
+    --hp-bad: var(--red-gradient);
+    width: 180px;
+    height: 18px;
+    background-color: rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    color: #e2e8f0;
+    font-weight: 600;
+    border-radius: 6px;
+    position: relative;
+    padding: 0px 6px;
+}
+
+.hp-bar__icon {
+    width: 12px;
+    height: 12px;
+    z-index: 10;
+    filter: invert(1) sepia(0) saturate(0) hue-rotate(180deg) brightness(1.2);
+}
+
+.hp-bar__content {
+    display: flex;
+    justify-content: start;
+    height: 100%;
+    align-items: center;
+    gap: 6px;
+}
+
+.hp-bar__fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    opacity: 0.5;
+    background: var(--hp-good);
+    transition: width 0.3s ease;
+}
+
+.hp-bar__label {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    line-height: 12px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+    font-variant-numeric: tabular-nums;
+    font-size: 11px;
+}

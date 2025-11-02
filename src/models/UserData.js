@@ -71,6 +71,7 @@ export class UserData {
         this.subProfession = '';
         this.attr = {};
         this.lastUpdateTime = Date.now();
+        this.isCurrentUserUuid = false;
     }
 
     _touch() {
@@ -184,6 +185,7 @@ export class UserData {
             hp: this.attr.hp,
             max_hp: this.attr.max_hp,
             dead_count: this.deadCount,
+            isCurrentUserUuid: this.isCurrentUserUuid,
         };
     }
 
@@ -214,6 +216,14 @@ export class UserData {
             };
         }
         return skills;
+    }
+
+    /** 设置玩家UUID
+     * @param {string|null} uuid - 玩家UUID
+     * */
+    setIsCurrentUserUuid() {
+        this._touch();
+        this.isCurrentUserUuid = true;
     }
 
     /** 设置职业
@@ -262,6 +272,7 @@ export class UserData {
 
     /** 重置数据 预留 */
     reset() {
+        this.isCurrentUserUuid = false;
         this.damageStats.reset();
         this.healingStats.reset();
         this.takenDamage = 0;
