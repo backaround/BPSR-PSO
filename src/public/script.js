@@ -424,7 +424,7 @@ function renderDataList(users) {
 
         let className = 'data-item';
         if (isCurrentUserUuid) {
-            user.name = `⚪ ${user.name}`;
+            user.name = `🟢 ${user.name}`;
             className += ' main-character';
         }
 
