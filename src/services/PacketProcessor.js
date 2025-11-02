@@ -374,6 +374,7 @@ export class PacketProcessor {
         if (uuid && !currentUserUuid.eq(uuid)) {
             currentUserUuid = uuid;
             logger.info('Got player UUID! UUID: ' + currentUserUuid + ' UID: ' + currentUserUuid.shiftRight(16));
+            userDataManager.setIsCurrentUserUuid(currentUserUuid.shiftRight(16).toNumber());
         }
         const aoiSyncDelta = aoiSyncToMeDelta.BaseDelta;
         if (!aoiSyncDelta) {
@@ -518,10 +519,17 @@ export class PacketProcessor {
     }
 
     _processPlayerAttrs(playerUid, attrs) {
+        const myUserUuid = currentUserUuid.shiftRight(16).toNumber();
+
+        if (playerUid === myUserUuid) {
+            userDataManager.setIsCurrentUserUuid(myUserUuid);
+        }
+
         for (const attr of attrs) {
             if (!attr.Id || !attr.RawData) {
                 continue;
             }
+
             const reader = pbjs.Reader.create(attr.RawData);
             switch (attr.Id) {
                 case AttrType.AttrName: {
