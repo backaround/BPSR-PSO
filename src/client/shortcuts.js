@@ -12,6 +12,7 @@ export function registerShortcuts() {
     registerResize();
     registerMove();
     registerMinimize();
+    registerClearData();
 }
 
 /**
@@ -20,6 +21,17 @@ export function registerShortcuts() {
 function registerPassthrough() {
     globalShortcut.register('Control+`', () => {
         window.togglePassthrough();
+    });
+}
+
+function registerClearData() {
+    globalShortcut.register('Control+Alt+`', () => {
+        try {
+            const browserWindow = window.getWindow();
+            browserWindow?.webContents.send('clear-data');
+        } catch (error) {
+            console.error('Failed to trigger clear data shortcut.', error);
+        }
     });
 }
 
