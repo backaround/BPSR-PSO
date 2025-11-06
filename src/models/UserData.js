@@ -222,7 +222,7 @@ export class UserData {
      * @param {string|null} uuid - 玩家UUID
      * */
     setIsCurrentUserUuid() {
-        this._touch();
+        // this._touch();
         this.isCurrentUserUuid = true;
     }
 

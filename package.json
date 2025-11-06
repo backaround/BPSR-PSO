@@ -1,7 +1,7 @@
 {
     "name": "bpsr_pso",
     "productName": "BPSR PSO",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "description": "Blue Protocol: Star Resonance - Per Second Overlay",
     "main": "src/index.js",
     "scripts": {
@@ -16,9 +16,12 @@
     "config": {
         "forge": {
             "packagerConfig": {
-                "name": "BPSR-PSO",
+                "name": "BPSR PSO",
                 "icon": "./resources/app.ico",
-                "extraResources": []
+                "extraResources": [
+                    "./resources/npcap-1.83.exe",
+                    "./README.md"
+                ]
             },
             "makers": [
                 {
@@ -35,7 +38,10 @@
                         "setupIcon": "./resources/app.ico",
                         "loadingGif": "./resources/installer.gif",
                         "createDesktopShortcut": true,
-                        "extraFiles": []
+                        "extraFiles": [
+                            "./resources/npcap-1.83.exe",
+                            "./README.md"
+                        ]
                     }
                 }
             ]
