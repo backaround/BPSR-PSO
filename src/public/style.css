@@ -335,11 +335,8 @@ body {
     bottom: 0;
     position: sticky;
     z-index: 10;
-    background-color: rgb(80, 80, 80);
-    box-shadow:
-        rgba(0, 0, 0, 0.4) 0px 2px 4px,
-        rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
-        rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+    background: rgb(41, 118, 30) !important;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
 .main-bar {
@@ -354,23 +351,23 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     border-radius: 6px;
 }
 
-.data-item:nth-child(1) .main-bar .rank {
-    background-color: #eebd1d !important;
+.data-item:nth-child(1) {
+    background-color: #eebd1d4e;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
-.data-item:nth-child(2) .main-bar .rank {
-    background-color: #adadad !important;
+.data-item:nth-child(2) {
+    background-color: #adadad4e;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
-.data-item:nth-child(3) .main-bar .rank {
-    background-color: #ce8946 !important;
+.data-item:nth-child(3) {
+    background-color: #ce89464e;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 

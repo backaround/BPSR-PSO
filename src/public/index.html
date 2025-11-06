@@ -12,6 +12,7 @@
         <link rel="stylesheet" href="components/popup/style.css" />
         <link rel="stylesheet" href="components/button/style.css" />
         <link rel="stylesheet" href="components/hpBar/style.css" />
+        <link rel="stylesheet" href="components/hotkeyInput/style.css" />
         <link rel="stylesheet" href="style.css" />
         <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     </head>
@@ -57,6 +58,11 @@
                                             Press <code>Control+`</code> to allow mouse clicks to "pass through" this
                                             window to the applications behind it. Press the key combination again to
                                             restore normal mouse interaction.
+                                        </li>
+                                        <li>
+                                            <strong>Clear Data:</strong>
+                                            <br />
+                                            Press <code>Control+Alt+`</code> to clear the current data and start fresh
                                         </li>
                                         <li>
                                             <strong>Minimize Window Content:</strong>
@@ -133,6 +139,9 @@
                                                 Wind Knight
                                             </option>
                                         </select>
+
+                                        <!-- <label>Hotkey clear data</label>
+                                        <input id="HkclearData" data-type-hotkey placeholder="Press keys…" /> -->
                                     </div>
                                 </div>
                             </div>
@@ -154,6 +163,7 @@
         <script src="components/hpBar/index.js"></script>
         <script src="components/select/index.js"></script>
         <script src="components/popup/index.js"></script>
+        <script src="components/hotkeyInput/index.js"></script>
         <script src="script.js"></script>
     </body>
 </html>

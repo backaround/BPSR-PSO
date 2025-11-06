@@ -1,0 +1,21 @@
+[data-type-hotkey] {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 12px;
+    color: #e0e0e0;
+    outline: none;
+    transition: all 0.2s;
+    cursor: text;
+    min-width: 300px;
+}
+
+[data-type-hotkey]:focus {
+    background: #333;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+[data-type-hotkey]::placeholder {
+    color: #999999;
+}

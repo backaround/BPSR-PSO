@@ -42,6 +42,7 @@ const filterSelect = document.getElementById('filterSelect');
 const pauseButton = document.getElementById('pauseButton');
 const serverStatus = document.getElementById('serverStatus');
 const opacitySlider = document.getElementById('opacitySlider');
+const HkclearData = document.getElementById('HkclearData');
 
 let isCurrentModeChanged = false;
 let allUsers = {};
@@ -118,7 +119,6 @@ function sortUsers(users, mode) {
 }
 
 function updateAll() {
-    // const usersArray = Object.values(allUsers).filter((u) => u.total_dps > 0 || u.total_hps > 0);
     scheduleRenderDataList(Object.values(allUsers));
 }
 
@@ -173,9 +173,6 @@ function hpBar({ currentHp, maxHp }) {
 
 function initSubBarContent({ user, damagePercent, healingPercent, damageTakenPercent }) {
     function initSubBar(types) {
-        // const hasDamage = user.total_damage.total > 0 || user.total_dps > 0;
-        // const hasDamageTaken = (user.taken_damage || 0) > 0;
-        // const hasHealing = user.total_healing.total > 0 || user.total_hps > 0;
         let result = '';
 
         if (types.includes('damage'))
@@ -425,12 +422,18 @@ function renderDataList(users) {
         const damageTakenPercent =
             totalDamageTakenOverall > 0 ? ((user.taken_damage || 0) / totalDamageTakenOverall) * 100 : 0;
 
+        let className = 'data-item';
+        if (isCurrentUserUuid) {
+            user.name = `🟢 ${user.name}`;
+            className += ' main-character';
+        }
+
         if (item) {
             updateRowData(item, { index, user, damagePercent, healingPercent, damageTakenPercent });
             existing.delete(user.id);
         } else {
             item = document.createElement('li');
-            item.className = `data-item ${isCurrentUserUuid ? 'main-character' : ''}`;
+            item.className = className;
             item.dataset.key = user.id;
             item.innerHTML = `${initMainBarContent({ index, user, damagePercent, healingPercent, damageTakenPercent })}
                                 <div class='sub-info'>    
@@ -622,6 +625,12 @@ document.addEventListener('DOMContentLoaded', () => {
         setSelectValues(filterSelect, Array.from(selectedClasses));
     }
 
+    // if (HkclearData) {
+    //     HkclearData.addEventListener('change', (e) => {
+    //         const values = Array.from(e.target.selectedOptions).map((opt) => opt.value);
+    //     });
+    // }
+
     window.electronAPI?.onTogglePassthrough((isIgnoring) => {
         if (isIgnoring) {
             controlTool.classList.add('hidden');
@@ -630,6 +639,10 @@ document.addEventListener('DOMContentLoaded', () => {
             controlPassthrough.classList.add('hidden');
             controlTool.classList.remove('hidden');
         }
+    });
+
+    window.electronAPI?.onClearData(() => {
+        clearData();
     });
 });
 
