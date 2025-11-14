@@ -10,17 +10,7 @@ const colorHues = [
     240, // Indigo
 ];
 
-let colorIndex = 0;
 function getColorShades(currentMode) {
-    // const h = colorHues[colorIndex];
-    // colorIndex = (colorIndex + 1) % colorHues.length;
-    // const s = 90,
-    //     l_main = 30,
-    //     l_sub = 20;
-    // return {
-    //     main: `hsl(${h}, ${s}%, ${l_main}%)`,
-    //     sub: `hsl(${h}, ${s}%, ${l_sub}%)`,
-    // };
     switch (currentMode) {
         case 'healing':
         case 'hps':
@@ -424,7 +414,6 @@ function renderDataList(users) {
 
         let className = 'data-item';
         if (isCurrentUserUuid) {
-            user.name = `🟢 ${user.name}`;
             className += ' main-character';
         }
 
@@ -649,3 +638,4 @@ document.addEventListener('DOMContentLoaded', () => {
 window.clearData = clearData;
 window.togglePause = togglePause;
 window.closeClient = closeClient;
+window.takeScreenshot = takeScreenshot;
