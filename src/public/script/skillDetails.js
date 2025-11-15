@@ -34,6 +34,57 @@ function getSkillTypeColor(type) {
     }
 }
 
+function getSkillTypeLabel(type) {
+    switch (type) {
+        case 'damage':
+            return 'Damage Skills';
+        case 'healing':
+            return 'Healing Skills';
+        default:
+            return 'Support Skills';
+    }
+}
+
+function getSkillTypeIcon(type) {
+    switch (type) {
+        case 'damage':
+            return '/assets/swords.svg';
+        case 'healing':
+            return '/assets/heart-plus.svg';
+        default:
+            return '/assets/shield-checkered.svg';
+    }
+}
+
+// Group and sort skills by type
+function groupAndSortSkills(skills) {
+    const skillsByType = {
+        damage: [],
+        healing: [],
+        support: [],
+    };
+
+    const skillEntries = Object.entries(skills);
+
+    skillEntries.forEach(([skillId, skillData]) => {
+        const type = skillData.type || 'support';
+        if (type === 'damage') {
+            skillsByType.damage.push([skillId, skillData]);
+        } else if (type === 'healing') {
+            skillsByType.healing.push([skillId, skillData]);
+        } else {
+            skillsByType.support.push([skillId, skillData]);
+        }
+    });
+
+    // Sort each group by total damage/healing descending
+    skillsByType.damage.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
+    skillsByType.healing.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
+    skillsByType.support.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
+
+    return skillsByType;
+}
+
 function formatUserData(user) {
     const professionString = user.profession ? user.profession.trim() : '';
     const mainProfession = professionString.split('(')[0].trim();
@@ -47,6 +98,34 @@ function formatUserData(user) {
     }
 
     return { icon, displayName, mainProfession };
+}
+
+// Create section container with header
+function createSectionContainerHTML(type, skills) {
+    const typeColor = getSkillTypeColor(type);
+    const typeIcon = getSkillTypeIcon(type);
+    const typeLabel = getSkillTypeLabel(type);
+    const count = skills.length;
+
+    const skillsHtml = skills.map(([skillId, skillData]) => createSkillRowHTML(skillId, skillData)).join('');
+
+    return `
+        <div class="skill-section" data-skill-type="${type}">
+            <div class="skill-section-header">
+                <div class="skill-bar-fill" style="background: ${typeColor};"></div>
+                <div class="section-header-content">
+                    <div class="section-header-title">
+                        <img src="${typeIcon}" class="skill-type-icon" >
+                        <span>${typeLabel}</span>
+                    </div>
+                    <span class="section-header-count">${count} skill${count !== 1 ? 's' : ''}</span>
+                </div>
+            </div>
+            <div class="skill-section-content">
+                ${skillsHtml}
+            </div>
+        </div>
+    `;
 }
 
 // Create initial skill row HTML
@@ -68,7 +147,7 @@ function createSkillRowHTML(skillId, skillData) {
                 </div>
             </div>
             
-            <div style="display: flex; gap: 10px; padding: 10px; background-color: rgba(0, 0, 0, 0.2);">
+            <div style="display: flex; gap: 16px; padding: 10px">
                 ${
                     skillIcon
                         ? ` <div class="skill-icon-container">
@@ -201,16 +280,24 @@ function renderUserSkills(userData) {
     viewTitle.textContent = displayName;
 
     const skills = userData.skills || {};
-    const skillEntries = Object.entries(skills);
 
-    if (skillEntries.length === 0) {
+    if (Object.keys(skills).length === 0) {
         return;
     }
 
-    // Sort skills by total damage/healing descending
-    skillEntries.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
+    // Group and sort skills by type
+    const skillsByType = groupAndSortSkills(skills);
 
-    const skillsHtml = skillEntries.map(([skillId, skillData]) => createSkillRowHTML(skillId, skillData)).join('');
+    // Build HTML with section containers
+    let skillsHtml = '';
+    const typeOrder = ['damage', 'healing', 'support'];
+
+    typeOrder.forEach((type) => {
+        const typeSkills = skillsByType[type];
+        if (typeSkills.length > 0) {
+            skillsHtml += createSectionContainerHTML(type, typeSkills);
+        }
+    });
 
     skillDetailsContainer.innerHTML = skillsHtml;
 }
@@ -224,8 +311,6 @@ function updateUserSkills(userData) {
     viewTitle.textContent = displayName;
 
     const skills = userData.skills || {};
-    const skillEntries = Object.entries(skills);
-    skillEntries.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
 
     // Check if we need to do initial render
     if (skillDetailsContainer.children.length === 0 || skillDetailsContainer.querySelector('.no-data-message')) {
@@ -233,15 +318,73 @@ function updateUserSkills(userData) {
         return;
     }
 
-    // Create map of existing skill elements
-    const existingSkills = new Map(
+    // Group and sort skills by type
+    const skillsByType = groupAndSortSkills(skills);
+
+    // Create map of existing section containers
+    const existingSections = new Map(
         Array.from(skillDetailsContainer.children)
+            .filter((el) => el.classList.contains('skill-section'))
+            .map((el) => [el.dataset.skillType, el])
+    );
+
+    // Build sections in order using optimal insertion pattern
+    const typeOrder = ['damage', 'healing', 'support'];
+    let currentPosition = 0;
+
+    typeOrder.forEach((type) => {
+        const typeSkills = skillsByType[type];
+        if (typeSkills.length === 0) return;
+
+        let sectionElement = existingSections.get(type);
+
+        if (!sectionElement) {
+            // Create new section container
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = createSectionContainerHTML(type, typeSkills);
+            sectionElement = tempDiv.firstElementChild;
+        } else {
+            // Update existing section
+            updateSectionContent(sectionElement, type, typeSkills);
+            existingSections.delete(type);
+        }
+
+        // Position section element
+        const currentAtPosition = skillDetailsContainer.children[currentPosition];
+        if (currentAtPosition !== sectionElement) {
+            skillDetailsContainer.insertBefore(sectionElement, currentAtPosition || null);
+        }
+        currentPosition++;
+    });
+
+    // Remove sections that no longer exist
+    existingSections.forEach((el) => el.remove());
+}
+
+// Update section content (header count and skills)
+function updateSectionContent(sectionElement, type, typeSkills) {
+    // Update header count
+    const countEl = sectionElement.querySelector('.section-header-count');
+    if (countEl) {
+        const newCount = `${typeSkills.length} skill${typeSkills.length !== 1 ? 's' : ''}`;
+        if (countEl.textContent !== newCount) {
+            countEl.textContent = newCount;
+        }
+    }
+
+    // Get section content container
+    const contentContainer = sectionElement.querySelector('.skill-section-content');
+    if (!contentContainer) return;
+
+    // Create map of existing skill elements in this section
+    const existingSkills = new Map(
+        Array.from(contentContainer.children)
             .filter((el) => el.classList.contains('skill-row'))
             .map((el) => [el.dataset.skillId, el])
     );
 
     // Update or create skills
-    skillEntries.forEach(([skillId, skillData], index) => {
+    typeSkills.forEach(([skillId, skillData], index) => {
         let skillElement = existingSkills.get(skillId);
 
         if (skillElement) {
@@ -255,10 +398,10 @@ function updateUserSkills(userData) {
             skillElement = tempDiv.firstElementChild;
         }
 
-        // Ensure correct position
-        const currentAtIndex = skillDetailsContainer.children[index];
+        // Position skill element
+        const currentAtIndex = contentContainer.children[index];
         if (currentAtIndex !== skillElement) {
-            skillDetailsContainer.insertBefore(skillElement, currentAtIndex || null);
+            contentContainer.insertBefore(skillElement, currentAtIndex || null);
         }
     });
 

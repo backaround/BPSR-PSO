@@ -159,12 +159,71 @@ body {
     font-weight: 500;
 }
 
+/* Skill Section Container */
+.skill-section {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.skill-section:last-child {
+    margin-bottom: 0;
+}
+
+/* Skill Section Header */
+.skill-section-header {
+    position: relative;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.section-header-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    height: 100%;
+    width: 100%;
+    gap: 10px;
+}
+
+.section-header-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-header-count {
+    font-size: 11px;
+    font-weight: 500;
+    color: #bbb;
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 3px 8px;
+    border-radius: 10px;
+}
+
+/* Skill Section Content */
+.skill-section-content {
+    display: flex;
+    flex-direction: column;
+}
 
 /* Skill Row */
-.skill-row {
-    background-color: rgba(0, 0, 0, 0.2);
-    overflow: hidden;
-}
 
 .skill-main-bar {
     position: relative;
@@ -289,12 +348,13 @@ body {
     opacity: 1;
 }
 
-/* Skill Row Styling for Direct Container */
-.skill-details-container > .skill-row {
-    background-color: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+/* Skill Row Styling within Section Content */
+.skill-section-content > .skill-row {
     overflow: hidden;
     flex-shrink: 0;
-    flex-grow: 1;
+    transition: all 0.2s ease;
+}
+
+.skill-section-content > .skill-row:hover {
+    background-color: rgba(0, 0, 0, 0.4);
 }

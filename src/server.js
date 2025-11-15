@@ -17,7 +17,7 @@ const SETTINGS_PATH = path.join(__dirname, 'settings.json');
 let isPaused = false;
 let globalSettings = {
     autoClearOnServerChange: true,
-    autoClearOnTimeout: false,
+    autoClearOnTimeout: true,
     onlyRecordEliteDummy: false,
 };
 
