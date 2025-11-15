@@ -61,7 +61,7 @@ function formatUserData(user) {
 // Create initial skill row HTML
 function createSkillRowHTML(skillId, skillData) {
     const typeColor = getSkillTypeColor(skillData.type);
-    const typeIcon = getSkillTypeIcon(skillData.type);
+    const skillIcon = skillData.image;
     const avgDamage = skillData.totalCount > 0 ? skillData.totalDamage / skillData.totalCount : 0;
 
     return `
@@ -69,7 +69,6 @@ function createSkillRowHTML(skillId, skillData) {
             <div class="skill-main-bar">
                 <div class="skill-bar-fill" style="background: ${typeColor};"></div>
                 <div class="skill-content">
-                    <img src="${typeIcon}" class="skill-type-icon" onerror="this.style.display='none'">
                     <span class="skill-name">${skillData.displayName}</span>
                     <div class="skill-stats">
                         <span class="skill-total">${formatNumber(skillData.totalDamage)}</span>
@@ -77,26 +76,37 @@ function createSkillRowHTML(skillId, skillData) {
                     </div>
                 </div>
             </div>
-            <div class="skill-details-row">
-                <div class="skill-detail-item">
-                    <span class="detail-label">Avg per Hit:</span>
-                    <span class="detail-value avg-hit">${formatNumber(avgDamage)}</span>
-                </div>
-                <div class="skill-detail-item">
-                    <span class="detail-label">Crit Rate:</span>
-                    <span class="detail-value crit-rate">${formatPercentage(skillData.critRate)}</span>
-                </div>
-                <div class="skill-detail-item">
-                    <span class="detail-label">Lucky Rate:</span>
-                    <span class="detail-value lucky-rate">${formatPercentage(skillData.luckyRate)}</span>
-                </div>
-                <div class="skill-detail-item">
-                    <span class="detail-label">Crit Hits:</span>
-                    <span class="detail-value crit-count">${skillData.critCount}</span>
-                </div>
-                <div class="skill-detail-item">
-                    <span class="detail-label">Lucky Hits:</span>
-                    <span class="detail-value lucky-count">${skillData.luckyCount}</span>
+            
+            <div style="display: flex; gap: 10px; padding: 10px; background-color: rgba(0, 0, 0, 0.2);">
+                ${
+                    skillIcon
+                        ? ` <div class="skill-icon-container">
+                                <img src="${skillIcon}" class="skill-icon" alt="${skillData.displayName}" onerror="this.style.display='none';" onload="this.classList.add('loaded')">
+                            </div>`
+                        : ''
+                }
+
+                <div class="skill-details-row">
+                    <div class="skill-detail-item">
+                        <span class="detail-label">Avg per Hit:</span>
+                        <span class="detail-value avg-hit">${formatNumber(avgDamage)}</span>
+                    </div>
+                    <div class="skill-detail-item">
+                        <span class="detail-label">Crit Rate:</span>
+                        <span class="detail-value crit-rate">${formatPercentage(skillData.critRate)}</span>
+                    </div>
+                    <div class="skill-detail-item">
+                        <span class="detail-label">Lucky Rate:</span>
+                        <span class="detail-value lucky-rate">${formatPercentage(skillData.luckyRate)}</span>
+                    </div>
+                    <div class="skill-detail-item">
+                        <span class="detail-label">Crit Hits:</span>
+                        <span class="detail-value crit-count">${skillData.critCount}</span>
+                    </div>
+                    <div class="skill-detail-item">
+                        <span class="detail-label">Lucky Hits:</span>
+                        <span class="detail-value lucky-count">${skillData.luckyCount}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -106,7 +116,7 @@ function createSkillRowHTML(skillId, skillData) {
 // Update existing skill row (only what changed)
 function updateSkillRow(skillElement, skillId, skillData) {
     const typeColor = getSkillTypeColor(skillData.type);
-    const typeIcon = getSkillTypeIcon(skillData.type);
+    const skillIcon = skillData.image;
     const avgDamage = skillData.totalCount > 0 ? skillData.totalDamage / skillData.totalCount : 0;
 
     // Update skill bar fill color
@@ -116,9 +126,15 @@ function updateSkillRow(skillElement, skillId, skillData) {
     }
 
     // Update skill icon
-    const icon = skillElement.querySelector('.skill-type-icon');
-    if (icon && icon.src !== typeIcon) {
-        icon.src = typeIcon;
+    const iconImg = skillElement.querySelector('.skill-icon');
+    if (iconImg && skillIcon) {
+        const currentSrc = iconImg.src.split('/').pop().split('?')[0];
+        const newSrc = skillIcon.split('/').pop().split('?')[0];
+        if (currentSrc !== newSrc) {
+            iconImg.classList.remove('loaded');
+            iconImg.src = skillIcon;
+            iconImg.alt = skillData.displayName;
+        }
     }
 
     // Update skill name
@@ -191,9 +207,7 @@ function createUserSectionHTML(userId, userData) {
     // Sort skills by total damage/healing descending
     skillEntries.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
 
-    const skillsHtml = skillEntries.map(([skillId, skillData]) =>
-        createSkillRowHTML(skillId, skillData)
-    ).join('');
+    const skillsHtml = skillEntries.map(([skillId, skillData]) => createSkillRowHTML(skillId, skillData)).join('');
 
     return `
         <div class="user-section" data-user-id="${userId}" data-collapsible="user-${userId}" data-collapsed="true">
@@ -243,9 +257,7 @@ function updateUserSection(userElement, userId, userData) {
     skillEntries.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
 
     // Create map of existing skill elements
-    const existingSkills = new Map(
-        Array.from(userSkillsContainer.children).map((el) => [el.dataset.skillId, el])
-    );
+    const existingSkills = new Map(Array.from(userSkillsContainer.children).map((el) => [el.dataset.skillId, el]));
 
     // Update or create skills
     skillEntries.forEach(([skillId, skillData], index) => {

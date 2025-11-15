@@ -19,7 +19,7 @@ class SkillDetailsWindow {
     _window = null;
     config = {};
     defaultConfig = {
-        width: 600,
+        width: 500,
         height: 400,
         x: undefined,
         y: undefined,
@@ -82,7 +82,7 @@ class SkillDetailsWindow {
             height: this.config.height,
             x: this.config.x,
             y: this.config.y,
-            minWidth: 600,
+            minWidth: 500,
             minHeight: 400,
             transparent: true,
             frame: false,
