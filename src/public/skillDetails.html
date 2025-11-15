@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>BPSR-PSO Skill Details</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="components/select/style.css" />
+        <link rel="stylesheet" href="components/popup/style.css" />
+        <link rel="stylesheet" href="components/button/style.css" />
+        <link rel="stylesheet" href="components/collapsible/style.css" />
+        <link rel="stylesheet" href="styles/skillDetails.css" />
+    </head>
+    <body>
+        <div id="app-wrapper">
+            <div class="main-container">
+                <div class="controls">
+                    <div class="title-container">
+                        <div id="serverStatus" class="status-indicator"></div>
+                        <span class="app-title">Skill Details</span>
+                    </div>
+
+                    <div class="no-drag-zone" id="control-tool" style="display: flex; gap: 8px">
+                        <div class="button-group">
+                            <button data-button id="closeButton" onclick="closeWindow()" title="Close Window">
+                                <img class="icon-button" src="/assets/x.svg" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="skillDetailsContainer" class="skill-details-container">
+                </div>
+            </div>
+        </div>
+        <script src="library/socket.io.min.js"></script>
+        <script src="components/select/index.js"></script>
+        <script src="components/popup/index.js"></script>
+        <script src="components/collapsible/index.js"></script>
+        <script src="script/skillDetails.js"></script>
+    </body>
+</html>

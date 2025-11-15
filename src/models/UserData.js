@@ -1,7 +1,15 @@
 import { StatisticData } from './StatisticData.js';
 import skill_names from '../tables/skill_names.json' with { type: 'json' };
+import skill_names_english from '../tables/skill_names_english.json' with { type: 'json' };
 
-const skillConfig = skill_names.skill_names;
+function getSkillNameEnglish(skillId) {
+    const chineseName = skill_names[skillId];
+    if (!chineseName) {
+        return `Unknown Skill (${skillId})`;
+    }
+    const englishName = skill_names_english[chineseName];
+    return englishName || chineseName;
+}
 
 function getSubProfessionBySkillId(skillId) {
     switch (skillId) {
@@ -198,7 +206,7 @@ export class UserData {
             const luckyCount = stat.count.lucky;
             const critRate = stat.count.total > 0 ? critCount / stat.count.total : 0;
             const luckyRate = stat.count.total > 0 ? luckyCount / stat.count.total : 0;
-            const name = skillConfig[skillId % 1000000000] ?? skillId % 1000000000;
+            const name = getSkillNameEnglish(skillId % 1000000000 ?? skillId % 1000000000);
             const elementype = stat.element;
 
             skills[skillId] = {

@@ -7,6 +7,26 @@ ipcMain.on('close-client', (event) => {
     app.quit();
 });
 
+ipcMain.on('open-skill-details-window', async (event) => {
+    const { default: skillDetailsWindow } = await import('./SkillDetailsWindow.js');
+    const { default: server } = await import('../server.js');
+
+    skillDetailsWindow.create();
+
+    // If server is running, load the server URL
+    if (server && server.server && server.server.listening) {
+        const address = server.server.address();
+        const port = address.port;
+        skillDetailsWindow.loadURL(`http://localhost:${port}/skillDetails.html`);
+    }
+});
+
+ipcMain.on('close-skill-details-window', (event) => {
+    import('./SkillDetailsWindow.js').then(({ default: skillDetailsWindow }) => {
+        skillDetailsWindow.close();
+    });
+});
+
 ipcMain.on('save-screenshot', async (event, base64Data) => {
     try {
         // Get the Pictures folder path

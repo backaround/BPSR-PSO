@@ -277,6 +277,20 @@ class UserDataManager {
         return result;
     }
 
+    getAllSkillsData() {
+        const result = {};
+        for (const [uid, user] of this.users.entries()) {
+            result[uid] = {
+                uid: user.uid,
+                name: user.name,
+                profession: user.profession + (user.subProfession ? ` (${user.subProfession})` : ''),
+                fightPoint: user.fightPoint,
+                skills: user.getSkillSummary(),
+            };
+        }
+        return result;
+    }
+
     getAllEnemiesData() {
         const result = {};
         const enemyIds = new Set([

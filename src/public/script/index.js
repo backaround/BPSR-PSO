@@ -635,7 +635,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+function openSkillDetails() {
+    window.electronAPI.openSkillDetailsWindow();
+}
+
 window.clearData = clearData;
 window.togglePause = togglePause;
 window.closeClient = closeClient;
 window.takeScreenshot = takeScreenshot;
+window.openSkillDetails = openSkillDetails;

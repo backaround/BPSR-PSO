@@ -13,7 +13,7 @@
         <link rel="stylesheet" href="components/button/style.css" />
         <link rel="stylesheet" href="components/hpBar/style.css" />
         <!-- <link rel="stylesheet" href="components/hotkeyInput/style.css" /> -->
-        <link rel="stylesheet" href="style.css" />
+        <link rel="stylesheet" href="styles/index.css" />
     </head>
     <body>
         <div id="app-wrapper">
@@ -143,14 +143,65 @@
                                         <input id="HkclearData" data-type-hotkey placeholder="Press keys…" /> -->
                                     </div>
 
-                                    <div class="settings-option">
-                                        <button data-button id="screenshotButton" onclick="takeScreenshot()" title="Take Screenshot" style="width: 100%; padding: 10px;">
-                                            <span style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                                <img class="icon-button" src="/assets/camera.svg" style="width: 16px; height: 16px;" />
-                                                <span style="font-size: 13px; font-weight: 500;" id="screenshotButtonText">Take Screenshot</span>
-                                            </span>
-                                        </button>
-                                    </div>
+                                    <section style="  display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 8px;">
+                                        <div class="settings-option">
+                                            <button
+                                                data-button
+                                                id="screenshotButton"
+                                                onclick="takeScreenshot()"
+                                                title="Take Screenshot"
+                                                style="width: 100%; height: 50px; padding: 5px"
+                                            >
+                                                <span
+                                                    style="
+                                                        display: flex;
+                                                        align-items: center;
+                                                        justify-content: center;
+                                                        gap: 4px;
+                                                        flex-direction: column;
+                                                    "
+                                                >
+                                                    <img
+                                                        class="icon-button"
+                                                        src="/assets/camera.svg"
+                                                        style="width: 16px; height: 16px"
+                                                    />
+                                                    <span
+                                                        style="font-size: 13px; font-weight: 500"
+                                                        id="screenshotButtonText"
+                                                        >Take Screenshot</span
+                                                    >
+                                                </span>
+                                            </button>
+                                        </div>
+
+                                        <div class="settings-option">
+                                            <button
+                                                data-button
+                                                id="skillDetailsButton"
+                                                onclick="openSkillDetails()"
+                                                title="Open Skill Details"
+                                                style="width: 100%; height: 50px; padding: 5px"
+                                            >
+                                                <span
+                                                    style="
+                                                        display: flex;
+                                                        align-items: center;
+                                                        justify-content: center;
+                                                        gap: 4px;
+                                                        flex-direction: column;
+                                                    "
+                                                >
+                                                    <img
+                                                        class="icon-button"
+                                                        src="/assets/swords.svg"
+                                                        style="width: 16px; height: 16px"
+                                                    />
+                                                    <span style="font-size: 13px; font-weight: 500">Skill Details</span>
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </section>
                                 </div>
                             </div>
 
@@ -175,7 +226,6 @@
         <script src="components/popup/index.js"></script>
         <script src="services/takeScreenshot.js"></script>
         <!-- <script src="components/hotkeyInput/index.js"></script> -->
-        <script src="script.js"></script>
-
+        <script src="script/index.js"></script>
     </body>
 </html>

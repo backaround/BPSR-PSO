@@ -1,0 +1,323 @@
+/* Global Styles & Resets */
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: transparent;
+    user-select: none;
+    color: #e0e0e0;
+    font-size: 12px;
+    box-sizing: border-box;
+    min-width: 600px;
+    -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    transition: 0.3s;
+    background-color: #888;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+    cursor: pointer;
+}
+
+:root {
+    --main-bg-opacity: 0.8;
+    --green-gradient: linear-gradient(135deg, #00c853, #aeea00);
+    --blue-gradient: linear-gradient(135deg, #2962ff, #00b0ff);
+    --red-gradient: linear-gradient(135deg, #ff3c3c, #ff7b00);
+    --yellow-gradient: linear-gradient(135deg, #ffd600, #ffea00);
+}
+
+.icon-button {
+    width: 15px;
+    height: 15px;
+    filter: invert(1) sepia(0) saturate(0) hue-rotate(180deg) brightness(1.2);
+}
+
+#app-wrapper {
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    padding: 0px;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.main-container {
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 12px;
+    background: rgba(48, 51, 53, var(--main-bg-opacity));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+}
+
+.controls {
+    -webkit-app-region: drag;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(18, 21, 23, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    height: 25px;
+    min-height: 25px;
+}
+
+.title-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.app-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.no-drag-zone {
+    -webkit-app-region: no-drag;
+}
+
+.button-group {
+    -webkit-app-region: no-drag;
+    display: flex;
+    gap: 8px;
+}
+
+#closeButton {
+    background-color: rgba(255, 0, 0, 0.4);
+    border-color: rgba(255, 0, 0, 0.6);
+}
+#closeButton:hover {
+    background-color: rgba(255, 0, 0, 0.6);
+}
+
+#serverStatus {
+    width: 10px !important;
+    height: 10px !important;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    flex-shrink: 0;
+    transition: background-color 0.3s ease;
+}
+
+#serverStatus.connected {
+    background-color: #4caf50;
+    box-shadow: 0 0 8px #4caf50;
+}
+#serverStatus.disconnected {
+    background-color: #f44336;
+    box-shadow: 0 0 8px #f44336;
+}
+#serverStatus.reconnecting {
+    background-color: #ffeb3b;
+    box-shadow: 0 0 8px #ffeb3b;
+}
+
+/* Skill Details Container */
+.skill-details-container {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.no-data-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 14px;
+    color: #999;
+    font-weight: 500;
+}
+
+/* User Section */
+.user-section {
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.user-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(18, 21, 23, 0.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+
+.user-header:hover {
+    background: rgba(18, 21, 23, 0.6);
+}
+
+/* Hide border when collapsed */
+[data-collapsed="true"] .user-header {
+    border-bottom: none;
+}
+
+.user-class-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+    filter: brightness(1000%) saturate(0%);
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    flex-grow: 1;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.skill-count-badge {
+    font-size: 11px;
+    font-weight: 500;
+    color: #aaa;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+
+/* User Skills */
+.user-skills {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Skill Row */
+.skill-row {
+    background-color: rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.skill-main-bar {
+    position: relative;
+    height: 32px;
+    display: flex;
+    align-items: center;
+}
+
+.skill-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    opacity: 0.3;
+    z-index: 0;
+}
+
+.skill-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    height: 100%;
+    width: 100%;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    gap: 10px;
+}
+
+.skill-type-icon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.9;
+    filter: invert(1) sepia(0) saturate(0) hue-rotate(180deg) brightness(1.2);
+    flex-shrink: 0;
+}
+
+.skill-name {
+    font-size: 13px;
+    font-weight: 500;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.skill-stats {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.skill-total {
+    font-weight: 600;
+    color: #fff;
+}
+
+.skill-count {
+    font-weight: 400;
+    color: #ccc;
+    font-size: 11px;
+}
+
+/* Skill Details Row */
+.skill-details-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 8px;
+    padding: 8px 10px;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.skill-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.detail-label {
+    font-size: 10px;
+    font-weight: 400;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+}

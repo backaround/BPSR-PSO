@@ -11,8 +11,6 @@ import userDataManager from './services/UserDataManager.js';
 import socket from './services/Socket.js';
 import logger from './services/Logger.js';
 
-import skillConfig from './tables/skill_names.json' with { type: 'json' };
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const SETTINGS_PATH = path.join(__dirname, 'settings.json');
@@ -74,6 +72,11 @@ class Server {
                 userDataManager.updateAllRealtimeDps();
                 const userData = userDataManager.getAllUsersData();
                 socket.emit('data', { code: 0, user: userData });
+            }
+
+            if (!isPaused) {
+                const skillData = userDataManager.getAllSkillsData();
+                socket.emit('skillData', { code: 0, user: skillData });
             }
         }, 100);
     }
