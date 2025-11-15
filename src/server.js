@@ -77,6 +77,18 @@ class Server {
             if (!isPaused) {
                 const skillData = userDataManager.getAllSkillsData();
                 socket.emit('skillData', { code: 0, user: skillData });
+
+                // Emit specific user skills to clients who requested them
+                const io = socket.getIO();
+                io.sockets.sockets.forEach((sock) => {
+                    if (sock.requestedUserId && skillData[sock.requestedUserId]) {
+                        sock.emit('userSkillData', {
+                            code: 0,
+                            userId: sock.requestedUserId,
+                            data: skillData[sock.requestedUserId],
+                        });
+                    }
+                });
             }
         }, 100);
     }
@@ -84,6 +96,20 @@ class Server {
     _configureSocketListener() {
         socket.on('connection', (sock) => {
             logger.info(`WebSocket client connected: ${sock.id}`);
+
+            sock.on('requestUserSkills', (data) => {
+                const { userId } = data;
+                logger.info(`Client ${sock.id} requested skills for user: ${userId}`);
+
+                // Store the requested userId for this socket
+                sock.requestedUserId = userId;
+            });
+
+            sock.on('stopUserSkills', () => {
+                logger.info(`Client ${sock.id} stopped requesting user skills`);
+                delete sock.requestedUserId;
+            });
+
             sock.on('disconnect', () => {
                 logger.info(`WebSocket client disconnected: ${sock.id}`);
             });

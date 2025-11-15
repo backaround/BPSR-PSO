@@ -19,8 +19,11 @@
             <div class="main-container">
                 <div class="controls">
                     <div class="title-container">
+                        <button data-button id="backButton" onclick="goBackToList()" title="Back to List" style="display: none; margin-right: 8px;">
+                            <img class="icon-button" src="/assets/caret-right.svg" style="transform: rotate(180deg);" />
+                        </button>
                         <div id="serverStatus" class="status-indicator"></div>
-                        <span class="app-title">Skill Details</span>
+                        <span class="app-title" id="viewTitle">Skill Details</span>
                     </div>
 
                     <div class="no-drag-zone" id="control-tool" style="display: flex; gap: 8px">
@@ -33,6 +36,9 @@
                 </div>
 
                 <div id="skillDetailsContainer" class="skill-details-container">
+                </div>
+
+                <div id="individualUserContainer" class="skill-details-container" style="display: none;">
                 </div>
             </div>
         </div>

@@ -7,7 +7,7 @@ ipcMain.on('close-client', (event) => {
     app.quit();
 });
 
-ipcMain.on('open-skill-details-window', async (event) => {
+ipcMain.on('open-skill-details-window', async (event, userId) => {
     const { default: skillDetailsWindow } = await import('./SkillDetailsWindow.js');
     const { default: server } = await import('../server.js');
 
@@ -17,7 +17,10 @@ ipcMain.on('open-skill-details-window', async (event) => {
     if (server && server.server && server.server.listening) {
         const address = server.server.address();
         const port = address.port;
-        skillDetailsWindow.loadURL(`http://localhost:${port}/skillDetails.html`);
+        const url = userId
+            ? `http://localhost:${port}/skillDetails.html?userId=${userId}`
+            : `http://localhost:${port}/skillDetails.html`;
+        skillDetailsWindow.loadURL(url);
     }
 });
 

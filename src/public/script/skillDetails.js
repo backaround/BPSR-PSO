@@ -1,5 +1,8 @@
 const skillDetailsContainer = document.getElementById('skillDetailsContainer');
+const individualUserContainer = document.getElementById('individualUserContainer');
 const serverStatus = document.getElementById('serverStatus');
+const backButton = document.getElementById('backButton');
+const viewTitle = document.getElementById('viewTitle');
 
 let socket = null;
 let isWebSocketConnected = false;
@@ -8,6 +11,9 @@ const WEBSOCKET_RECONNECT_INTERVAL = 5000;
 const SERVER_URL = 'localhost:8990';
 
 let allSkillData = {};
+let currentView = 'list'; // 'list' or 'individual'
+let currentUserId = null;
+let individualUserData = null;
 
 function formatNumber(num) {
     if (isNaN(num)) return 'NaN';
@@ -370,6 +376,116 @@ function closeWindow() {
     window.electronAPI.closeSkillDetailsWindow();
 }
 
+function goBackToList() {
+    currentView = 'list';
+    currentUserId = null;
+    individualUserData = null;
+
+    // Stop requesting user-specific data
+    if (socket && isWebSocketConnected) {
+        socket.emit('stopUserSkills');
+    }
+
+    // Show list view, hide individual view
+    skillDetailsContainer.style.display = 'flex';
+    individualUserContainer.style.display = 'none';
+    backButton.style.display = 'none';
+    viewTitle.textContent = 'Skill Details';
+}
+
+function switchToIndividualView(userId) {
+    currentView = 'individual';
+    currentUserId = userId;
+
+    // Request user-specific data
+    if (socket && isWebSocketConnected) {
+        socket.emit('requestUserSkills', { userId });
+    }
+
+    // Hide list view, show individual view
+    skillDetailsContainer.style.display = 'none';
+    individualUserContainer.style.display = 'flex';
+    backButton.style.display = 'block';
+}
+
+function renderIndividualUserSkills(userData) {
+    if (!userData || !userData.skills) {
+        individualUserContainer.innerHTML = '<div class="no-data-message">No skill data available</div>';
+        return;
+    }
+
+    const userName = userData.name || 'Unknown User';
+    const fightPoint = userData.fightPoint || 0;
+    const displayName = fightPoint ? `${userName} (${fightPoint})` : userName;
+
+    viewTitle.textContent = displayName;
+
+    const skills = userData.skills || {};
+    const skillEntries = Object.entries(skills);
+
+    if (skillEntries.length === 0) {
+        individualUserContainer.innerHTML = '<div class="no-data-message">No skills recorded yet</div>';
+        return;
+    }
+
+    // Sort skills by total damage/healing descending
+    skillEntries.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
+
+    const skillsHtml = skillEntries
+        .map(([skillId, skillData]) => createSkillRowHTML(skillId, skillData))
+        .join('');
+
+    individualUserContainer.innerHTML = `
+        <div class="individual-user-wrapper">
+            ${skillsHtml}
+        </div>
+    `;
+}
+
+function updateIndividualUserSkills(userData) {
+    if (!userData || !userData.skills) return;
+
+    const skills = userData.skills || {};
+    const skillEntries = Object.entries(skills);
+    skillEntries.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
+
+    const wrapper = individualUserContainer.querySelector('.individual-user-wrapper');
+    if (!wrapper) {
+        renderIndividualUserSkills(userData);
+        return;
+    }
+
+    // Create map of existing skill elements
+    const existingSkills = new Map(
+        Array.from(wrapper.children).map((el) => [el.dataset.skillId, el])
+    );
+
+    // Update or create skills
+    skillEntries.forEach(([skillId, skillData], index) => {
+        let skillElement = existingSkills.get(skillId);
+
+        if (skillElement) {
+            // Update existing skill
+            updateSkillRow(skillElement, skillId, skillData);
+            existingSkills.delete(skillId);
+        } else {
+            // Create new skill element
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = createSkillRowHTML(skillId, skillData);
+            skillElement = tempDiv.firstElementChild;
+        }
+
+        // Ensure correct position
+        const currentAtIndex = wrapper.children[index];
+        if (currentAtIndex !== skillElement) {
+            wrapper.insertBefore(skillElement, currentAtIndex || null);
+        }
+    });
+
+    // Remove skills that no longer exist
+    existingSkills.forEach((el) => el.remove());
+}
+
 function showServerStatus(status) {
     const statusElement = document.getElementById('serverStatus');
     statusElement.className = `status-indicator ${status}`;
@@ -390,6 +506,11 @@ function connectWebSocket() {
         isWebSocketConnected = true;
         showServerStatus('connected');
         lastWebSocketMessage = Date.now();
+
+        // Re-request user skills if we were viewing a specific user
+        if (currentView === 'individual' && currentUserId) {
+            socket.emit('requestUserSkills', { userId: currentUserId });
+        }
     });
 
     socket.on('disconnect', () => {
@@ -398,7 +519,22 @@ function connectWebSocket() {
     });
 
     socket.on('skillData', (data) => {
-        processSkillDataUpdate(data);
+        if (currentView === 'list') {
+            processSkillDataUpdate(data);
+        }
+        lastWebSocketMessage = Date.now();
+    });
+
+    socket.on('userSkillData', (data) => {
+        if (currentView === 'individual' && data.userId === currentUserId) {
+            individualUserData = data.data;
+
+            if (!individualUserContainer.querySelector('.individual-user-wrapper')) {
+                renderIndividualUserSkills(data.data);
+            } else {
+                updateIndividualUserSkills(data.data);
+            }
+        }
         lastWebSocketMessage = Date.now();
     });
 
@@ -424,6 +560,14 @@ function checkConnection() {
 function initialize() {
     connectWebSocket();
     setInterval(checkConnection, WEBSOCKET_RECONNECT_INTERVAL);
+
+    // Check if opened with a specific user ID
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
+
+    if (userId) {
+        switchToIndividualView(userId);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -431,3 +575,5 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.closeWindow = closeWindow;
+window.goBackToList = goBackToList;
+window.switchToIndividualView = switchToIndividualView;

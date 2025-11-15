@@ -424,15 +424,21 @@ function renderDataList(users) {
             item = document.createElement('li');
             item.className = className;
             item.dataset.key = user.id;
+            item.dataset.userId = user.id;
             item.innerHTML = `${initMainBarContent({ index, user, damagePercent, healingPercent, damageTakenPercent })}
-                                <div class='sub-info'>    
+                                <div class='sub-info'>
                                     <div class="left-data">
                                         ${hpBar({ currentHp: user.hp, maxHp: user.maxHp })}
                                     </div>
-                                    <div class="right-data">   
+                                    <div class="right-data">
                                         ${initSubBarContent({ user, damagePercent, healingPercent, damageTakenPercent })}
                                     </div>
                                 </div>`;
+
+            // Add click handler to open skill details for this user
+            item.addEventListener('click', () => {
+                openSkillDetailsForUser(user.id);
+            });
         }
 
         // If it's not already at position index, move it there
@@ -639,8 +645,13 @@ function openSkillDetails() {
     window.electronAPI.openSkillDetailsWindow();
 }
 
+function openSkillDetailsForUser(userId) {
+    window.electronAPI.openSkillDetailsWindow(userId);
+}
+
 window.clearData = clearData;
 window.togglePause = togglePause;
 window.closeClient = closeClient;
 window.takeScreenshot = takeScreenshot;
 window.openSkillDetails = openSkillDetails;
+window.openSkillDetailsForUser = openSkillDetailsForUser;

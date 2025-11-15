@@ -162,7 +162,7 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
     min-width: 0;
-    padding: 6px;
+    padding: 8px;
     flex-direction: column;
     flex-wrap: nowrap;
 }
@@ -319,6 +319,7 @@ body {
 }
 
 .data-item {
+    transition: border 0.3s ease, box-shadow 0.3s ease;
     position: relative;
     background-color: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -328,6 +329,14 @@ body {
     display: flex;
     flex-direction: column;
     flex-shrink: 0; /* Prevents the item from shrinking below its content size */
+    cursor: pointer;
+}
+
+.data-item:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3),
+                0 0 30px rgba(255, 255, 255, 0.15),
+                inset 0 0 10px rgba(255, 255, 255, 0.1) !important;
 }
 
 .data-item.main-character {

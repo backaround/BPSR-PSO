@@ -5,6 +5,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onTogglePassthrough: (callback) => ipcRenderer.on('passthrough-toggled', (_event, value) => callback(value)),
     onClearData: (callback) => ipcRenderer.on('clear-data', () => callback()),
     saveScreenshot: (base64Data) => ipcRenderer.send('save-screenshot', base64Data),
-    openSkillDetailsWindow: () => ipcRenderer.send('open-skill-details-window'),
+    openSkillDetailsWindow: (userId) => ipcRenderer.send('open-skill-details-window', userId),
     closeSkillDetailsWindow: () => ipcRenderer.send('close-skill-details-window'),
 });
