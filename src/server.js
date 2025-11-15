@@ -72,20 +72,16 @@ class Server {
                 userDataManager.updateAllRealtimeDps();
                 const userData = userDataManager.getAllUsersData();
                 socket.emit('data', { code: 0, user: userData });
-            }
-
-            if (!isPaused) {
-                const skillData = userDataManager.getAllSkillsData();
-                socket.emit('skillData', { code: 0, user: skillData });
 
                 // Emit specific user skills to clients who requested them
                 const io = socket.getIO();
                 io.sockets.sockets.forEach((sock) => {
-                    if (sock.requestedUserId && skillData[sock.requestedUserId]) {
+                    const skillData = userDataManager.getUserSkillData(Number(sock.requestedUserId));
+                    if (sock.requestedUserId && skillData) {
                         sock.emit('userSkillData', {
                             code: 0,
                             userId: sock.requestedUserId,
-                            data: skillData[sock.requestedUserId],
+                            data: skillData,
                         });
                     }
                 });

@@ -319,7 +319,9 @@ body {
 }
 
 .data-item {
-    transition: border 0.3s ease, box-shadow 0.3s ease;
+    transition:
+        border 0.3s ease,
+        box-shadow 0.3s ease;
     position: relative;
     background-color: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -334,9 +336,40 @@ body {
 
 .data-item:hover {
     border-color: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3),
-                0 0 30px rgba(255, 255, 255, 0.15),
-                inset 0 0 10px rgba(255, 255, 255, 0.1) !important;
+    box-shadow:
+        0 0 15px rgba(255, 255, 255, 0.3),
+        0 0 30px rgba(255, 255, 255, 0.15),
+        inset 0 0 10px rgba(255, 255, 255, 0.1) !important;
+}
+
+.data-item:before {
+    position: absolute;
+    content: 'View details';
+    transition: all 0.3s ease;
+    padding: 5px 10px;
+    opacity: 0;
+    z-index: 10;
+    inset: 0;
+    border-radius: 0px 6px 0px 6px;
+    background: rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    text-shadow:
+    /* crisp outline */
+        -1px -1px 0 #6a6a6a,
+        1px -1px 0 #6a6a6a,
+        -1px 1px 0 #6a6a6a,
+        1px 1px 0 #6a6a6a,
+        /* soft halo */ 0 0 3px rgba(0, 0, 0, 0.6);
+    letter-spacing: 0.5px;
+}
+
+.data-item:hover:before {
+    opacity: 1;
+    transform: translateY(0%);
 }
 
 .data-item.main-character {

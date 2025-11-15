@@ -2,6 +2,7 @@ import { StatisticData } from './StatisticData.js';
 import skill_names from '../tables/skill_names.json' with { type: 'json' };
 import skill_names_english from '../tables/skill_names_english.json' with { type: 'json' };
 import skill_images from '../tables/skill_images.json' with { type: 'json' };
+import chinese_to_english from '../tables/chinese_to_english.json' with { type: 'json' };
 
 function getSkillNameEnglish(skillId) {
     const chineseName = skill_names[skillId];
@@ -14,6 +15,10 @@ function getSkillNameEnglish(skillId) {
 
 function getSkillImage(skillNameEnglish) {
     return skill_images[skillNameEnglish] || null;
+}
+
+function getSkillType(SkillType) {
+    return chinese_to_english[SkillType] || null;
 }
 
 function getSubProfessionBySkillId(skillId) {
@@ -217,7 +222,7 @@ export class UserData {
 
             skills[skillId] = {
                 displayName: name,
-                type: stat.type,
+                type: getSkillType(stat.type),
                 image: image,
                 elementype: elementype,
                 totalDamage: stat.stats.total,

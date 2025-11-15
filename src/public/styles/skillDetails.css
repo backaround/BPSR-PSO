@@ -140,7 +140,6 @@ body {
 
 /* Skill Details Container */
 .skill-details-container {
-    flex: 1 1 0;
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
@@ -160,66 +159,6 @@ body {
     font-weight: 500;
 }
 
-/* User Section */
-.user-section {
-    background-color: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.user-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    background: rgba(18, 21, 23, 0.4);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.2s ease;
-}
-
-.user-header:hover {
-    background: rgba(18, 21, 23, 0.6);
-}
-
-/* Hide border when collapsed */
-[data-collapsed="true"] .user-header {
-    border-bottom: none;
-}
-
-.user-class-icon {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-    flex-shrink: 0;
-    filter: brightness(1000%) saturate(0%);
-}
-
-.user-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: #fff;
-    flex-grow: 1;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-}
-
-.skill-count-badge {
-    font-size: 11px;
-    font-weight: 500;
-    color: #aaa;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 3px 8px;
-    border-radius: 12px;
-}
-
-/* User Skills */
-.user-skills {
-    display: flex;
-    flex-direction: column;
-}
 
 /* Skill Row */
 .skill-row {
@@ -295,7 +234,7 @@ body {
 /* Skill Details Row */
 .skill-details-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
     gap: 8px;
     width: 100%;
     align-items: center;
@@ -324,16 +263,14 @@ body {
 /* Skill Icon Container */
 .skill-icon-container {
     position: relative;
-    width: 56px;
-    height: 56px;
+    width: 40px;
+    height: 40px;
     flex-shrink: 0;
     border-radius: 8px;
     overflow: hidden;
     background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-    padding: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 3px;
     justify-items: center;
     align-items: center;
 }
@@ -352,31 +289,12 @@ body {
     opacity: 1;
 }
 
-/* Individual User View */
-.individual-user-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-}
-
-.individual-user-wrapper .skill-row {
+/* Skill Row Styling for Direct Container */
+.skill-details-container > .skill-row {
     background-color: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     overflow: hidden;
-}
-
-/* Back Button Styling */
-#backButton {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 4px 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-#backButton:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.3);
+    flex-shrink: 0;
+    flex-grow: 1;
 }

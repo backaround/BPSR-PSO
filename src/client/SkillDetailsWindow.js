@@ -19,8 +19,8 @@ class SkillDetailsWindow {
     _window = null;
     config = {};
     defaultConfig = {
-        width: 500,
-        height: 400,
+        width: 450,
+        height: 450,
         x: undefined,
         y: undefined,
     };
@@ -82,8 +82,8 @@ class SkillDetailsWindow {
             height: this.config.height,
             x: this.config.x,
             y: this.config.y,
-            minWidth: 500,
-            minHeight: 400,
+            minWidth: 450,
+            minHeight: 450,
             transparent: true,
             frame: false,
             title: 'BPSR-PSO Skill Details',

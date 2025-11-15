@@ -1,7 +1,5 @@
 const skillDetailsContainer = document.getElementById('skillDetailsContainer');
-const individualUserContainer = document.getElementById('individualUserContainer');
 const serverStatus = document.getElementById('serverStatus');
-const backButton = document.getElementById('backButton');
 const viewTitle = document.getElementById('viewTitle');
 
 let socket = null;
@@ -10,10 +8,8 @@ let lastWebSocketMessage = Date.now();
 const WEBSOCKET_RECONNECT_INTERVAL = 5000;
 const SERVER_URL = 'localhost:8990';
 
-let allSkillData = {};
-let currentView = 'list'; // 'list' or 'individual'
 let currentUserId = null;
-let individualUserData = null;
+let currentUserData = null;
 
 function formatNumber(num) {
     if (isNaN(num)) return 'NaN';
@@ -25,17 +21,6 @@ function formatNumber(num) {
 
 function formatPercentage(value) {
     return (value * 100).toFixed(1) + '%';
-}
-
-function getSkillTypeIcon(type) {
-    switch (type) {
-        case 'damage':
-            return 'assets/swords.svg';
-        case 'healing':
-            return 'assets/heart-plus.svg';
-        default:
-            return 'assets/swords.svg';
-    }
 }
 
 function getSkillTypeColor(type) {
@@ -200,217 +185,12 @@ function updateSkillRow(skillElement, skillId, skillData) {
     }
 }
 
-// Create initial user section HTML
-function createUserSectionHTML(userId, userData) {
-    const { icon, displayName, mainProfession } = formatUserData(userData);
-    const skills = userData.skills || {};
-    const skillEntries = Object.entries(skills);
-
-    if (skillEntries.length === 0) {
-        return '';
-    }
-
-    // Sort skills by total damage/healing descending
-    skillEntries.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
-
-    const skillsHtml = skillEntries.map(([skillId, skillData]) => createSkillRowHTML(skillId, skillData)).join('');
-
-    return `
-        <div class="user-section" data-user-id="${userId}" data-collapsible="user-${userId}" data-collapsed="true">
-            <div class="user-header" data-collapsible-trigger="user-${userId}">
-                <img src="${icon}" class="user-class-icon" alt="${mainProfession}" onerror="this.style.display='none'">
-                <span class="user-name">${displayName}</span>
-                <span class="skill-count-badge">${skillEntries.length} skills</span>
-            </div>
-            <div class="user-skills" data-collapsible-content="user-${userId}">
-                ${skillsHtml}
-            </div>
-        </div>
-    `;
-}
-
-// Update existing user section (only what changed)
-function updateUserSection(userElement, userId, userData) {
-    const { icon, displayName, mainProfession } = formatUserData(userData);
-    const skills = userData.skills || {};
-
-    // Update user header
-    const classIcon = userElement.querySelector('.user-class-icon');
-    if (classIcon && classIcon.src !== icon) {
-        classIcon.src = icon;
-    }
-    if (classIcon && classIcon.alt !== mainProfession) {
-        classIcon.alt = mainProfession;
-    }
-
-    const userName = userElement.querySelector('.user-name');
-    if (userName && userName.textContent !== displayName) {
-        userName.textContent = displayName;
-    }
-
-    const skillCountBadge = userElement.querySelector('.skill-count-badge');
-    const skillCount = Object.keys(skills).length;
-    const newBadgeText = `${skillCount} skills`;
-    if (skillCountBadge && skillCountBadge.textContent !== newBadgeText) {
-        skillCountBadge.textContent = newBadgeText;
-    }
-
-    // Update skills
-    const userSkillsContainer = userElement.querySelector('.user-skills');
-    if (!userSkillsContainer) return;
-
-    const skillEntries = Object.entries(skills);
-    skillEntries.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
-
-    // Create map of existing skill elements
-    const existingSkills = new Map(Array.from(userSkillsContainer.children).map((el) => [el.dataset.skillId, el]));
-
-    // Update or create skills
-    skillEntries.forEach(([skillId, skillData], index) => {
-        let skillElement = existingSkills.get(skillId);
-
-        if (skillElement) {
-            // Update existing skill
-            updateSkillRow(skillElement, skillId, skillData);
-            existingSkills.delete(skillId);
-        } else {
-            // Create new skill element
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = createSkillRowHTML(skillId, skillData);
-            skillElement = tempDiv.firstElementChild;
-        }
-
-        // Ensure correct position
-        const currentAtIndex = userSkillsContainer.children[index];
-        if (currentAtIndex !== skillElement) {
-            userSkillsContainer.insertBefore(skillElement, currentAtIndex || null);
-        }
-    });
-
-    // Remove skills that no longer exist
-    existingSkills.forEach((el) => el.remove());
-}
-
-function renderSkillDetails(data) {
-    if (!data || Object.keys(data).length === 0) {
-        return;
-    }
-
-    const userEntries = Object.entries(data);
-
-    // Filter out users without valid names
-    const validUserEntries = userEntries.filter(([userId, userData]) => {
-        const userName = userData.name;
-        // Skip users with invalid or missing names
-        if (!userName || userName === '...' || userName === '未知' || /^\.+$/.test(userName)) {
-            return false;
-        }
-        return true;
-    });
-
-    // Sort users by total damage (sum of all skills)
-    validUserEntries.sort((a, b) => {
-        const getTotalDamage = (userData) => {
-            const skills = userData.skills || {};
-            return Object.values(skills).reduce((sum, skill) => sum + skill.totalDamage, 0);
-        };
-        return getTotalDamage(b[1]) - getTotalDamage(a[1]);
-    });
-
-    // Create map of existing user sections
-    const existingUsers = new Map(
-        Array.from(skillDetailsContainer.children)
-            .filter((el) => el.classList.contains('user-section'))
-            .map((el) => [el.dataset.userId, el])
-    );
-
-    // Update or create user sections
-    validUserEntries.forEach(([userId, userData], index) => {
-        let userElement = existingUsers.get(userId);
-        const isNewElement = !userElement;
-
-        if (userElement) {
-            // Update existing user section
-            updateUserSection(userElement, userId, userData);
-            existingUsers.delete(userId);
-        } else {
-            // Create new user section
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = createUserSectionHTML(userId, userData);
-            userElement = tempDiv.firstElementChild;
-        }
-
-        // Ensure correct position
-        const currentAtIndex = skillDetailsContainer.children[index];
-        if (currentAtIndex !== userElement) {
-            skillDetailsContainer.insertBefore(userElement, currentAtIndex || null);
-        }
-
-        // Register new collapsible
-        if (isNewElement && window.CollapsibleManager) {
-            window.CollapsibleManager.register(`user-${userId}`, true);
-        }
-    });
-
-    // Remove users that no longer exist
-    existingUsers.forEach((el) => {
-        const userId = el.dataset.userId;
-        if (window.CollapsibleManager) {
-            window.CollapsibleManager.unregister(`user-${userId}`);
-        }
-        el.remove();
-    });
-}
-
-function processSkillDataUpdate(data) {
-    if (!data.user) {
-        console.warn('Received skill data without a "user" object:', data);
-        return;
-    }
-
-    allSkillData = data.user;
-    renderSkillDetails(allSkillData);
-}
-
 function closeWindow() {
     window.electronAPI.closeSkillDetailsWindow();
 }
 
-function goBackToList() {
-    currentView = 'list';
-    currentUserId = null;
-    individualUserData = null;
-
-    // Stop requesting user-specific data
-    if (socket && isWebSocketConnected) {
-        socket.emit('stopUserSkills');
-    }
-
-    // Show list view, hide individual view
-    skillDetailsContainer.style.display = 'flex';
-    individualUserContainer.style.display = 'none';
-    backButton.style.display = 'none';
-    viewTitle.textContent = 'Skill Details';
-}
-
-function switchToIndividualView(userId) {
-    currentView = 'individual';
-    currentUserId = userId;
-
-    // Request user-specific data
-    if (socket && isWebSocketConnected) {
-        socket.emit('requestUserSkills', { userId });
-    }
-
-    // Hide list view, show individual view
-    skillDetailsContainer.style.display = 'none';
-    individualUserContainer.style.display = 'flex';
-    backButton.style.display = 'block';
-}
-
-function renderIndividualUserSkills(userData) {
+function renderUserSkills(userData) {
     if (!userData || !userData.skills) {
-        individualUserContainer.innerHTML = '<div class="no-data-message">No skill data available</div>';
         return;
     }
 
@@ -424,40 +204,40 @@ function renderIndividualUserSkills(userData) {
     const skillEntries = Object.entries(skills);
 
     if (skillEntries.length === 0) {
-        individualUserContainer.innerHTML = '<div class="no-data-message">No skills recorded yet</div>';
         return;
     }
 
     // Sort skills by total damage/healing descending
     skillEntries.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
 
-    const skillsHtml = skillEntries
-        .map(([skillId, skillData]) => createSkillRowHTML(skillId, skillData))
-        .join('');
+    const skillsHtml = skillEntries.map(([skillId, skillData]) => createSkillRowHTML(skillId, skillData)).join('');
 
-    individualUserContainer.innerHTML = `
-        <div class="individual-user-wrapper">
-            ${skillsHtml}
-        </div>
-    `;
+    skillDetailsContainer.innerHTML = skillsHtml;
 }
 
-function updateIndividualUserSkills(userData) {
+function updateUserSkills(userData) {
     if (!userData || !userData.skills) return;
+
+    const userName = userData.name || 'Unknown User';
+    const fightPoint = userData.fightPoint || 0;
+    const displayName = fightPoint ? `${userName} (${fightPoint})` : userName;
+    viewTitle.textContent = displayName;
 
     const skills = userData.skills || {};
     const skillEntries = Object.entries(skills);
     skillEntries.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
 
-    const wrapper = individualUserContainer.querySelector('.individual-user-wrapper');
-    if (!wrapper) {
-        renderIndividualUserSkills(userData);
+    // Check if we need to do initial render
+    if (skillDetailsContainer.children.length === 0 || skillDetailsContainer.querySelector('.no-data-message')) {
+        renderUserSkills(userData);
         return;
     }
 
     // Create map of existing skill elements
     const existingSkills = new Map(
-        Array.from(wrapper.children).map((el) => [el.dataset.skillId, el])
+        Array.from(skillDetailsContainer.children)
+            .filter((el) => el.classList.contains('skill-row'))
+            .map((el) => [el.dataset.skillId, el])
     );
 
     // Update or create skills
@@ -476,9 +256,9 @@ function updateIndividualUserSkills(userData) {
         }
 
         // Ensure correct position
-        const currentAtIndex = wrapper.children[index];
+        const currentAtIndex = skillDetailsContainer.children[index];
         if (currentAtIndex !== skillElement) {
-            wrapper.insertBefore(skillElement, currentAtIndex || null);
+            skillDetailsContainer.insertBefore(skillElement, currentAtIndex || null);
         }
     });
 
@@ -507,8 +287,8 @@ function connectWebSocket() {
         showServerStatus('connected');
         lastWebSocketMessage = Date.now();
 
-        // Re-request user skills if we were viewing a specific user
-        if (currentView === 'individual' && currentUserId) {
+        // Request user skills if we have a userId
+        if (currentUserId) {
             socket.emit('requestUserSkills', { userId: currentUserId });
         }
     });
@@ -518,21 +298,17 @@ function connectWebSocket() {
         showServerStatus('disconnected');
     });
 
-    socket.on('skillData', (data) => {
-        if (currentView === 'list') {
-            processSkillDataUpdate(data);
-        }
-        lastWebSocketMessage = Date.now();
-    });
-
     socket.on('userSkillData', (data) => {
-        if (currentView === 'individual' && data.userId === currentUserId) {
-            individualUserData = data.data;
+        if (data.userId === currentUserId) {
+            currentUserData = data.data;
 
-            if (!individualUserContainer.querySelector('.individual-user-wrapper')) {
-                renderIndividualUserSkills(data.data);
+            if (
+                skillDetailsContainer.children.length === 0 ||
+                skillDetailsContainer.querySelector('.no-data-message')
+            ) {
+                renderUserSkills(data.data);
             } else {
-                updateIndividualUserSkills(data.data);
+                updateUserSkills(data.data);
             }
         }
         lastWebSocketMessage = Date.now();
@@ -558,15 +334,18 @@ function checkConnection() {
 }
 
 function initialize() {
-    connectWebSocket();
-    setInterval(checkConnection, WEBSOCKET_RECONNECT_INTERVAL);
-
-    // Check if opened with a specific user ID
+    // Get user ID from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('userId');
 
     if (userId) {
-        switchToIndividualView(userId);
+        currentUserId = userId;
+        connectWebSocket();
+        setInterval(checkConnection, WEBSOCKET_RECONNECT_INTERVAL);
+    } else {
+        // No user ID provided, show message
+        skillDetailsContainer.innerHTML = '<div class="no-data-message">No user selected</div>';
+        viewTitle.textContent = 'Unknown';
     }
 }
 
@@ -575,5 +354,3 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.closeWindow = closeWindow;
-window.goBackToList = goBackToList;
-window.switchToIndividualView = switchToIndividualView;

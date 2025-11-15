@@ -20,7 +20,7 @@ class Window {
     config = {};
     defaultConfig = {
         width: 450,
-        height: 500,
+        height: 450,
         x: undefined,
         y: undefined,
         passthrough: false,
