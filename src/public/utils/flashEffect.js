@@ -7,7 +7,7 @@
  */
 
 /**
- * Triggers a flash animation on an element
+ * Triggers a flash animation on an element using a div mask overlay
  * @param {HTMLElement} element - The element to flash
  * @param {Object} options - Animation options
  * @param {number} options.duration - Duration in ms (default: 300)
@@ -17,32 +17,44 @@
 function flashElement(element, options = {}) {
     if (!element) return;
 
-    const {
-        duration = 300,
-        color = 'rgba(255, 255, 255, 0.3)',
-        easing = 'ease-out'
-    } = options;
+    const { duration = 300, color = 'rgba(255, 255, 255, 0.3)', easing = 'ease-out' } = options;
 
-    // Cancel any existing flash animation on this element
+    // Create or reuse flash mask div
+    let flashMask = element._flashMask;
+    if (!flashMask) {
+        flashMask = document.createElement('div');
+
+        // Apply all styles inline for complete portability
+        Object.assign(flashMask.style, {
+            position: 'absolute',
+            inset: '0',
+            pointerEvents: 'none',
+            zIndex: '100',
+            borderRadius: 'inherit',
+            display: 'none',
+        });
+
+        element.appendChild(flashMask);
+        element._flashMask = flashMask;
+    }
+
+    // Cancel any existing flash animation
     if (element._flashAnimation) {
         element._flashAnimation.cancel();
     }
 
-    // Create and run the flash animation
-    element._flashAnimation = element.animate(
-        [
-            { backgroundColor: color, boxShadow: `0 0 8px ${color}` },
-            { backgroundColor: 'transparent', boxShadow: 'none' }
-        ],
-        {
-            duration,
-            easing,
-            fill: 'forwards'
-        }
-    );
+    // Show the mask and animate its opacity
+    flashMask.style.display = 'block';
+    flashMask.style.backgroundColor = color;
 
-    // Clean up the animation reference when done
+    element._flashAnimation = flashMask.animate([{ opacity: '1' }, { opacity: '0' }], {
+        duration,
+        easing,
+    });
+
+    // Clean up when animation finishes
     element._flashAnimation.onfinish = () => {
+        flashMask.style.display = 'none';
         element._flashAnimation = null;
     };
 }
@@ -70,10 +82,10 @@ function flashRow(element, options = {}) {
     if (!element) return;
 
     const defaultOptions = {
-        duration: 3000,
+        duration: 1000,
         color: 'rgba(255, 255, 255, 0.1)',
         easing: 'ease-out',
-        ...options
+        ...options,
     };
 
     flashElement(element, defaultOptions);

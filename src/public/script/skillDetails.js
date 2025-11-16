@@ -138,7 +138,7 @@ function createSectionContainerHTML(type, skills) {
 // Create initial skill row HTML
 function createSkillRowHTML(skillId, skillData, sectionTotal = 0) {
     const typeColor = getSkillTypeColor(skillData.type);
-    const skillIcon = skillData.image;
+    const skillIcon = skillData.image ?? '/assets/unknown-skill.svg';
     const avgDamage = skillData.totalCount > 0 ? skillData.totalDamage / skillData.totalCount : 0;
     const percentage = sectionTotal > 0 ? (skillData.totalDamage / sectionTotal) * 100 : 0;
 
@@ -157,13 +157,10 @@ function createSkillRowHTML(skillId, skillData, sectionTotal = 0) {
             </div>
 
             <div style="display: flex; gap: 16px; padding: 10px">
-                ${
-                    skillIcon
-                        ? ` <div class="skill-icon-container">
-                                <img src="${skillIcon}" class="skill-icon" alt="${skillData.displayName}" onerror="this.style.display='none';" onload="this.classList.add('loaded')">
-                            </div>`
-                        : ''
-                }
+
+                <div class="skill-icon-container">
+                    <img src="${skillIcon}" class="skill-icon" alt="${skillData.displayName}" onerror="this.style.display='none';" onload="this.classList.add('loaded')">
+                </div>
 
                 <div class="skill-details-row">
                     <div class="skill-detail-item">

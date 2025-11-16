@@ -209,32 +209,79 @@ export class UserData {
 
     /** 获取技能统计数据 */
     getSkillSummary() {
-        const skills = {};
+        const skillsByName = {};
+
+        // First pass: aggregate skills with the same name
         for (const [skillId, stat] of this.skillUsage) {
-            const total = stat.stats.normal + stat.stats.critical + stat.stats.lucky + stat.stats.crit_lucky;
-            const critCount = stat.count.critical;
-            const luckyCount = stat.count.lucky;
-            const critRate = stat.count.total > 0 ? critCount / stat.count.total : 0;
-            const luckyRate = stat.count.total > 0 ? luckyCount / stat.count.total : 0;
             const name = getSkillNameEnglish(skillId % 1000000000 ?? skillId % 1000000000);
             const image = getSkillImage(name);
             const elementype = stat.element;
+            const type = getSkillType(stat.type);
 
-            skills[skillId] = {
-                displayName: name,
-                type: getSkillType(stat.type),
-                image: image,
-                elementype: elementype,
-                totalDamage: stat.stats.total,
-                totalCount: stat.count.total,
-                critCount: stat.count.critical,
-                luckyCount: stat.count.lucky,
+            if (!skillsByName[name]) {
+                // Initialize aggregated skill data
+                skillsByName[name] = {
+                    displayName: name,
+                    type: type,
+                    image: image,
+                    elementype: elementype,
+                    totalDamage: 0,
+                    totalCount: 0,
+                    critCount: 0,
+                    luckyCount: 0,
+                    damageBreakdown: {
+                        normal: 0,
+                        critical: 0,
+                        lucky: 0,
+                        crit_lucky: 0,
+                        total: 0
+                    },
+                    countBreakdown: {
+                        normal: 0,
+                        critical: 0,
+                        lucky: 0,
+                        crit_lucky: 0,
+                        total: 0
+                    }
+                };
+            }
+
+            // Aggregate the stats
+            const skill = skillsByName[name];
+            skill.totalDamage += stat.stats.total;
+            skill.totalCount += stat.count.total;
+            skill.critCount += stat.count.critical;
+            skill.luckyCount += stat.count.lucky;
+
+            // Aggregate damage breakdown
+            skill.damageBreakdown.normal += stat.stats.normal;
+            skill.damageBreakdown.critical += stat.stats.critical;
+            skill.damageBreakdown.lucky += stat.stats.lucky;
+            skill.damageBreakdown.crit_lucky += stat.stats.crit_lucky;
+            skill.damageBreakdown.total += stat.stats.total;
+
+            // Aggregate count breakdown
+            skill.countBreakdown.normal += stat.count.normal;
+            skill.countBreakdown.critical += stat.count.critical;
+            skill.countBreakdown.lucky += stat.count.lucky;
+            skill.countBreakdown.crit_lucky += stat.count.crit_lucky;
+            skill.countBreakdown.total += stat.count.total;
+        }
+
+        // Second pass: calculate rates for aggregated skills
+        const skills = {};
+        let skillIndex = 0;
+        for (const [name, skill] of Object.entries(skillsByName)) {
+            const critRate = skill.totalCount > 0 ? skill.critCount / skill.totalCount : 0;
+            const luckyRate = skill.totalCount > 0 ? skill.luckyCount / skill.totalCount : 0;
+
+            skills[skillIndex++] = {
+                ...skill,
                 critRate: critRate,
-                luckyRate: luckyRate,
-                damageBreakdown: { ...stat.stats },
-                countBreakdown: { ...stat.count },
+                luckyRate: luckyRate
             };
         }
+
         return skills;
     }
 

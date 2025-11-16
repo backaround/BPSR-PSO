@@ -370,6 +370,7 @@ body {
 
 /* Skill Row Styling within Section Content */
 .skill-section-content > .skill-row {
+    position: relative;
     overflow: hidden;
     flex-shrink: 0;
     transition: all 0.2s ease;

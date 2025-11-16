@@ -398,21 +398,6 @@ body {
     border-radius: 6px;
 }
 
-.data-item:nth-child(1) {
-    background-color: #eebd1d4e;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-}
-
-.data-item:nth-child(2) {
-    background-color: #adadad4e;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-}
-
-.data-item:nth-child(3) {
-    background-color: #ce89464e;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-}
-
 .content {
     position: relative;
     z-index: 2;
