@@ -94,9 +94,15 @@ class Window {
 
         const scaleFactor = targetDisplay.scaleFactor;
 
+        const scaleWidth = Math.floor(this.config.width / scaleFactor);
+        const scaleHeight = Math.floor(this.config.height / scaleFactor);
+
+        const originalWidth = Math.floor(scaleWidth * scaleFactor);
+        const originalHeight = Math.floor(scaleHeight * scaleFactor);
+
         this._window = new BrowserWindow({
-            width: Math.floor(this.config.width / scaleFactor),
-            height: Math.floor(this.config.height / scaleFactor),
+            width: scaleWidth,
+            height: scaleHeight,
             x: this.config.x,
             y: this.config.y,
             minWidth: 450,
@@ -118,6 +124,7 @@ class Window {
         });
 
         // this._window.openDevTools({ mode: 'detach' });
+        this._window.setSize(originalWidth, originalHeight); // The initial size is incorrect, this will set it again to the correct size
         this._window.setAlwaysOnTop(true, 'normal');
         this._window.setMovable(true);
         this._window.loadFile(htmlPath);
