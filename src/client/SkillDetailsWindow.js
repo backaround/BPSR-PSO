@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'electron';
+import { BrowserWindow, screen } from 'electron';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import fs from 'fs';
@@ -24,10 +24,6 @@ class SkillDetailsWindow {
         x: undefined,
         y: undefined,
     };
-
-    constructor() {
-        this.config = this._loadConfig();
-    }
 
     /**
      * Loads window configuration from the JSON file.
@@ -77,9 +73,23 @@ class SkillDetailsWindow {
             return this._window;
         }
 
+        this.config = this._loadConfig();
+
+        // Get the display where the window will be created
+        let targetDisplay;
+        if (this.config.x !== undefined && this.config.y !== undefined) {
+            // If we have saved position, get the display at that position
+            targetDisplay = screen.getDisplayNearestPoint({ x: this.config.x, y: this.config.y });
+        } else {
+            // Otherwise use the primary display
+            targetDisplay = screen.getPrimaryDisplay();
+        }
+
+        const scaleFactor = targetDisplay.scaleFactor;
+
         this._window = new BrowserWindow({
-            width: this.config.width,
-            height: this.config.height,
+            width: Math.floor(this.config.width / scaleFactor),
+            height: Math.floor(this.config.height / scaleFactor),
             x: this.config.x,
             y: this.config.y,
             minWidth: 450,
@@ -96,11 +106,11 @@ class SkillDetailsWindow {
                 enableRemoteModule: false,
                 v8CacheOptions: 'code',
                 nodeIntegration: false,
-                sandbox: true,
             },
             autoMenuBar: true,
         });
 
+        // this._window.openDevTools({ mode: 'detach' });
         this._window.setAlwaysOnTop(true, 'normal');
         this._window.setMovable(true);
         this._window.loadFile(htmlPath);
