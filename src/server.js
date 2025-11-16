@@ -11,15 +11,13 @@ import userDataManager from './services/UserDataManager.js';
 import socket from './services/Socket.js';
 import logger from './services/Logger.js';
 
-import skillConfig from './tables/skill_names.json' with { type: 'json' };
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const SETTINGS_PATH = path.join(__dirname, 'settings.json');
 let isPaused = false;
 let globalSettings = {
     autoClearOnServerChange: true,
-    autoClearOnTimeout: false,
+    autoClearOnTimeout: true,
     onlyRecordEliteDummy: false,
 };
 
@@ -74,6 +72,19 @@ class Server {
                 userDataManager.updateAllRealtimeDps();
                 const userData = userDataManager.getAllUsersData();
                 socket.emit('data', { code: 0, user: userData });
+
+                // Emit specific user skills to clients who requested them
+                const io = socket.getIO();
+                io.sockets.sockets.forEach((sock) => {
+                    const skillData = userDataManager.getUserSkillData(Number(sock.requestedUserId));
+                    if (sock.requestedUserId && skillData) {
+                        sock.emit('userSkillData', {
+                            code: 0,
+                            userId: sock.requestedUserId,
+                            data: skillData,
+                        });
+                    }
+                });
             }
         }, 100);
     }
@@ -81,6 +92,20 @@ class Server {
     _configureSocketListener() {
         socket.on('connection', (sock) => {
             logger.info(`WebSocket client connected: ${sock.id}`);
+
+            sock.on('requestUserSkills', (data) => {
+                const { userId } = data;
+                logger.info(`Client ${sock.id} requested skills for user: ${userId}`);
+
+                // Store the requested userId for this socket
+                sock.requestedUserId = userId;
+            });
+
+            sock.on('stopUserSkills', () => {
+                logger.info(`Client ${sock.id} stopped requesting user skills`);
+                delete sock.requestedUserId;
+            });
+
             sock.on('disconnect', () => {
                 logger.info(`WebSocket client disconnected: ${sock.id}`);
             });

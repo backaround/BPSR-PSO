@@ -22,10 +22,18 @@ class Socket {
 
     on(event, callback) {
         if (_io === null || _io === undefined) {
-            throw "io must be initialized" 
+            throw "io must be initialized"
         }
 
         _io.on(event, callback)
+    }
+
+    getIO() {
+        if (_io === null || _io === undefined) {
+            throw "io must be initialized"
+        }
+
+        return _io;
     }
 }
 

@@ -12,9 +12,8 @@
         <link rel="stylesheet" href="components/popup/style.css" />
         <link rel="stylesheet" href="components/button/style.css" />
         <link rel="stylesheet" href="components/hpBar/style.css" />
-        <link rel="stylesheet" href="components/hotkeyInput/style.css" />
-        <link rel="stylesheet" href="style.css" />
-        <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+        <!-- <link rel="stylesheet" href="components/hotkeyInput/style.css" /> -->
+        <link rel="stylesheet" href="styles/index.css" />
     </head>
     <body>
         <div id="app-wrapper">
@@ -143,6 +142,35 @@
                                         <!-- <label>Hotkey clear data</label>
                                         <input id="HkclearData" data-type-hotkey placeholder="Press keys…" /> -->
                                     </div>
+
+                                    <div class="settings-option">
+                                        <button
+                                            data-button
+                                            id="screenshotButton"
+                                            onclick="takeScreenshot()"
+                                            title="Take Screenshot"
+                                        >
+                                            <span
+                                                style="
+                                                    display: flex;
+                                                    align-items: center;
+                                                    justify-content: center;
+                                                    gap: 8px;
+                                                "
+                                            >
+                                                <img
+                                                    class="icon-button"
+                                                    src="/assets/camera.svg"
+                                                    style="width: 16px; height: 16px"
+                                                />
+                                                <span
+                                                    style="font-size: 13px; font-weight: 500"
+                                                    id="screenshotButtonText"
+                                                    >Take Screenshot</span
+                                                >
+                                            </span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -160,10 +188,13 @@
                 <div id="columnsContainer" class="columns-container"></div>
             </div>
         </div>
+        <script src="library/socket.io.min.js"></script>
+        <script src="library/dom-to-image-more.min.js"></script>
         <script src="components/hpBar/index.js"></script>
         <script src="components/select/index.js"></script>
         <script src="components/popup/index.js"></script>
-        <script src="components/hotkeyInput/index.js"></script>
-        <script src="script.js"></script>
+        <script src="services/takeScreenshot.js"></script>
+        <!-- <script src="components/hotkeyInput/index.js"></script> -->
+        <script src="script/index.js"></script>
     </body>
 </html>

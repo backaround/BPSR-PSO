@@ -260,10 +260,12 @@ class UserDataManager {
     getUserSkillData(uid) {
         const user = this.users.get(uid);
         if (!user) return null;
+
         return {
             uid: user.uid,
             name: user.name,
             profession: user.profession + (user.subProfession ? `-${user.subProfession}` : ''),
+            fightPoint: user.fightPoint,
             skills: user.getSkillSummary(),
             attr: user.attr,
         };
@@ -273,6 +275,20 @@ class UserDataManager {
         const result = {};
         for (const [uid, user] of this.users.entries()) {
             result[uid] = user.getSummary();
+        }
+        return result;
+    }
+
+    getAllSkillsData() {
+        const result = {};
+        for (const [uid, user] of this.users.entries()) {
+            result[uid] = {
+                uid: user.uid,
+                name: user.name,
+                profession: user.profession + (user.subProfession ? ` (${user.subProfession})` : ''),
+                fightPoint: user.fightPoint,
+                skills: user.getSkillSummary(),
+            };
         }
         return result;
     }

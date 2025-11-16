@@ -10,17 +10,7 @@ const colorHues = [
     240, // Indigo
 ];
 
-let colorIndex = 0;
 function getColorShades(currentMode) {
-    // const h = colorHues[colorIndex];
-    // colorIndex = (colorIndex + 1) % colorHues.length;
-    // const s = 90,
-    //     l_main = 30,
-    //     l_sub = 20;
-    // return {
-    //     main: `hsl(${h}, ${s}%, ${l_main}%)`,
-    //     sub: `hsl(${h}, ${s}%, ${l_sub}%)`,
-    // };
     switch (currentMode) {
         case 'healing':
         case 'hps':
@@ -424,7 +414,6 @@ function renderDataList(users) {
 
         let className = 'data-item';
         if (isCurrentUserUuid) {
-            user.name = `🟢 ${user.name}`;
             className += ' main-character';
         }
 
@@ -435,15 +424,21 @@ function renderDataList(users) {
             item = document.createElement('li');
             item.className = className;
             item.dataset.key = user.id;
+            item.dataset.userId = user.id;
             item.innerHTML = `${initMainBarContent({ index, user, damagePercent, healingPercent, damageTakenPercent })}
-                                <div class='sub-info'>    
+                                <div class='sub-info'>
                                     <div class="left-data">
                                         ${hpBar({ currentHp: user.hp, maxHp: user.maxHp })}
                                     </div>
-                                    <div class="right-data">   
+                                    <div class="right-data">
                                         ${initSubBarContent({ user, damagePercent, healingPercent, damageTakenPercent })}
                                     </div>
                                 </div>`;
+
+            // Add click handler to open skill details for this user
+            item.addEventListener('click', () => {
+                openSkillDetailsForUser(user.id);
+            });
         }
 
         // If it's not already at position index, move it there
@@ -646,6 +641,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+function openSkillDetails() {
+    window.electronAPI.openSkillDetailsWindow();
+}
+
+function openSkillDetailsForUser(userId) {
+    window.electronAPI.openSkillDetailsWindow(userId);
+}
+
 window.clearData = clearData;
 window.togglePause = togglePause;
 window.closeClient = closeClient;
+window.takeScreenshot = takeScreenshot;
+window.openSkillDetails = openSkillDetails;
+window.openSkillDetailsForUser = openSkillDetailsForUser;
