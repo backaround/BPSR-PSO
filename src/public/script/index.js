@@ -56,29 +56,11 @@ let selectedClasses = new Set([
     'Wind Knight',
 ]);
 
-let rafRenderId = null;
-let scheduledUsersArray = null;
-let lastRenderTime = 0;
-const TARGET_FPS = 10; // WebSocket is ~10 updates per sec.
-const FRAME_INTERVAL = 1000 / TARGET_FPS;
+// Create RAF scheduler for rendering (10 FPS to match WebSocket rate)
+const renderScheduler = createRAFScheduler(10);
 
 function scheduleRenderDataList(users) {
-    scheduledUsersArray = users;
-    if (rafRenderId) return;
-
-    rafRenderId = requestAnimationFrame((currentTime) => {
-        const elapsed = currentTime - lastRenderTime;
-
-        if (elapsed >= FRAME_INTERVAL) {
-            rafRenderId = null;
-            renderDataList(scheduledUsersArray || []);
-            scheduledUsersArray = null;
-            lastRenderTime = currentTime;
-        } else {
-            rafRenderId = null;
-            scheduleRenderDataList(scheduledUsersArray);
-        }
-    });
+    renderScheduler.schedule(renderDataList, users);
 }
 
 function formatNumber(num) {

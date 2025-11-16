@@ -196,6 +196,12 @@ body {
     gap: 10px;
 }
 
+.section-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .section-header-title {
     font-size: 13px;
     font-weight: 700;
@@ -206,6 +212,13 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.section-header-total {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffd700;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .section-header-count {
@@ -240,6 +253,7 @@ body {
     width: 100%;
     opacity: 0.3;
     z-index: 0;
+    transition: width 0.3s ease;
 }
 
 .skill-content {
@@ -276,6 +290,12 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
+    font-size: 12px;
+}
+
+.skill-percentage {
+    font-weight: 700;
+    color: #ffd700;
     font-size: 12px;
 }
 

@@ -11,6 +11,10 @@ const SERVER_URL = 'localhost:8990';
 let currentUserId = null;
 let currentUserData = null;
 
+// Create RAF scheduler for render and update functions (10 FPS to match WebSocket rate)
+const renderScheduler = createRAFScheduler(10);
+const updateScheduler = createRAFScheduler(10);
+
 function formatNumber(num) {
     if (isNaN(num)) return 'NaN';
     if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1) + 'B';
@@ -64,23 +68,18 @@ function groupAndSortSkills(skills) {
         support: [],
     };
 
-    const skillEntries = Object.entries(skills);
+    const compareDesc = (a, b) => b[1].totalDamage - a[1].totalDamage;
 
-    skillEntries.forEach(([skillId, skillData]) => {
+    // Single pass: group skills
+    for (const [skillId, skillData] of Object.entries(skills)) {
         const type = skillData.type || 'support';
-        if (type === 'damage') {
-            skillsByType.damage.push([skillId, skillData]);
-        } else if (type === 'healing') {
-            skillsByType.healing.push([skillId, skillData]);
-        } else {
-            skillsByType.support.push([skillId, skillData]);
-        }
-    });
+        (skillsByType[type] || skillsByType.support).push([skillId, skillData]);
+    }
 
-    // Sort each group by total damage/healing descending
-    skillsByType.damage.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
-    skillsByType.healing.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
-    skillsByType.support.sort((a, b) => b[1].totalDamage - a[1].totalDamage);
+    // Sort each group
+    skillsByType.damage.sort(compareDesc);
+    skillsByType.healing.sort(compareDesc);
+    skillsByType.support.sort(compareDesc);
 
     return skillsByType;
 }
@@ -107,21 +106,29 @@ function createSectionContainerHTML(type, skills) {
     const typeLabel = getSkillTypeLabel(type);
     const count = skills.length;
 
-    const skillsHtml = skills.map(([skillId, skillData]) => createSkillRowHTML(skillId, skillData)).join('');
+    // Calculate total damage/heal for this section
+    const sectionTotal = skills.reduce((sum, [_, skillData]) => sum + skillData.totalDamage, 0);
+
+    const skillsHtml = skills
+        .map(([skillId, skillData]) => createSkillRowHTML(skillId, skillData, sectionTotal))
+        .join('');
 
     return `
         <div class="skill-section" data-skill-type="${type}">
             <div class="skill-section-header">
                 <div class="skill-bar-fill" style="background: ${typeColor};"></div>
                 <div class="section-header-content">
-                    <div class="section-header-title">
-                        <img src="${typeIcon}" class="skill-type-icon" >
-                        <span>${typeLabel}</span>
+                    <div class="section-header-left">
+                        <div class="section-header-title">
+                            <img src="${typeIcon}" class="skill-type-icon">
+                            <span>${typeLabel}</span>
+                            <span class="section-header-total">${formatNumber(sectionTotal)}</span>
+                        </div>
                     </div>
                     <span class="section-header-count">${count} skill${count !== 1 ? 's' : ''}</span>
                 </div>
             </div>
-            <div class="skill-section-content">
+            <div class="skill-section-content" data-section-total="${sectionTotal}">
                 ${skillsHtml}
             </div>
         </div>
@@ -129,24 +136,26 @@ function createSectionContainerHTML(type, skills) {
 }
 
 // Create initial skill row HTML
-function createSkillRowHTML(skillId, skillData) {
+function createSkillRowHTML(skillId, skillData, sectionTotal = 0) {
     const typeColor = getSkillTypeColor(skillData.type);
     const skillIcon = skillData.image;
     const avgDamage = skillData.totalCount > 0 ? skillData.totalDamage / skillData.totalCount : 0;
+    const percentage = sectionTotal > 0 ? (skillData.totalDamage / sectionTotal) * 100 : 0;
 
     return `
         <div class="skill-row" data-skill-id="${skillId}">
             <div class="skill-main-bar">
-                <div class="skill-bar-fill" style="background: ${typeColor};"></div>
+                <div class="skill-bar-fill" style="background: ${typeColor}"></div>
                 <div class="skill-content">
                     <span class="skill-name">${skillData.displayName}</span>
                     <div class="skill-stats">
+                        <span class="skill-percentage">${percentage.toFixed(1)}%</span>
                         <span class="skill-total">${formatNumber(skillData.totalDamage)}</span>
                         <span class="skill-count">(${skillData.totalCount} hits)</span>
                     </div>
                 </div>
             </div>
-            
+
             <div style="display: flex; gap: 16px; padding: 10px">
                 ${
                     skillIcon
@@ -184,15 +193,18 @@ function createSkillRowHTML(skillId, skillData) {
 }
 
 // Update existing skill row (only what changed)
-function updateSkillRow(skillElement, skillId, skillData) {
+function updateSkillRow(skillElement, skillId, skillData, sectionTotal = 0) {
     const typeColor = getSkillTypeColor(skillData.type);
     const skillIcon = skillData.image;
     const avgDamage = skillData.totalCount > 0 ? skillData.totalDamage / skillData.totalCount : 0;
+    const percentage = sectionTotal > 0 ? (skillData.totalDamage / sectionTotal) * 100 : 0;
 
-    // Update skill bar fill color
+    // Update skill bar fill color and width
     const barFill = skillElement.querySelector('.skill-bar-fill');
-    if (barFill && barFill.style.background !== typeColor) {
-        barFill.style.background = typeColor;
+    if (barFill) {
+        if (barFill.style.background !== typeColor) {
+            barFill.style.background = typeColor;
+        }
     }
 
     // Update skill icon
@@ -212,6 +224,13 @@ function updateSkillRow(skillElement, skillId, skillData) {
     const newName = skillData.displayName;
     if (nameEl && nameEl.textContent !== newName) {
         nameEl.textContent = newName;
+    }
+
+    // Update percentage
+    const percentageEl = skillElement.querySelector('.skill-percentage');
+    const newPercentage = `${percentage.toFixed(1)}%`;
+    if (percentageEl && percentageEl.textContent !== newPercentage) {
+        percentageEl.textContent = newPercentage;
     }
 
     // Update total damage
@@ -268,6 +287,10 @@ function closeWindow() {
     window.electronAPI.closeSkillDetailsWindow();
 }
 
+function scheduleRenderUserSkills(userData) {
+    renderScheduler.schedule(renderUserSkills, userData);
+}
+
 function renderUserSkills(userData) {
     if (!userData || !userData.skills) {
         return;
@@ -300,6 +323,10 @@ function renderUserSkills(userData) {
     });
 
     skillDetailsContainer.innerHTML = skillsHtml;
+}
+
+function scheduleUpdateUserSkills(userData) {
+    updateScheduler.schedule(updateUserSkills, userData);
 }
 
 function updateUserSkills(userData) {
@@ -363,6 +390,9 @@ function updateUserSkills(userData) {
 
 // Update section content (header count and skills)
 function updateSectionContent(sectionElement, type, typeSkills) {
+    // Calculate total damage/heal for this section
+    const sectionTotal = typeSkills.reduce((sum, [_, skillData]) => sum + skillData.totalDamage, 0);
+
     // Update header count
     const countEl = sectionElement.querySelector('.section-header-count');
     if (countEl) {
@@ -372,9 +402,21 @@ function updateSectionContent(sectionElement, type, typeSkills) {
         }
     }
 
+    // Update header total
+    const totalEl = sectionElement.querySelector('.section-header-total');
+    if (totalEl) {
+        const newTotal = formatNumber(sectionTotal);
+        if (totalEl.textContent !== newTotal) {
+            totalEl.textContent = newTotal;
+        }
+    }
+
     // Get section content container
     const contentContainer = sectionElement.querySelector('.skill-section-content');
     if (!contentContainer) return;
+
+    // Update section total data attribute
+    contentContainer.dataset.sectionTotal = sectionTotal;
 
     // Create map of existing skill elements in this section
     const existingSkills = new Map(
@@ -389,12 +431,12 @@ function updateSectionContent(sectionElement, type, typeSkills) {
 
         if (skillElement) {
             // Update existing skill
-            updateSkillRow(skillElement, skillId, skillData);
+            updateSkillRow(skillElement, skillId, skillData, sectionTotal);
             existingSkills.delete(skillId);
         } else {
             // Create new skill element
             const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = createSkillRowHTML(skillId, skillData);
+            tempDiv.innerHTML = createSkillRowHTML(skillId, skillData, sectionTotal);
             skillElement = tempDiv.firstElementChild;
         }
 
@@ -449,9 +491,9 @@ function connectWebSocket() {
                 skillDetailsContainer.children.length === 0 ||
                 skillDetailsContainer.querySelector('.no-data-message')
             ) {
-                renderUserSkills(data.data);
+                scheduleRenderUserSkills(data.data);
             } else {
-                updateUserSkills(data.data);
+                scheduleUpdateUserSkills(data.data);
             }
         }
         lastWebSocketMessage = Date.now();

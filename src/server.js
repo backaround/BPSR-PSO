@@ -86,7 +86,7 @@ class Server {
                     }
                 });
             }
-        }, 100);
+        }, 250);
     }
 
     _configureSocketListener() {
