@@ -86,10 +86,15 @@ class Window {
             frame: false,
             title: 'BPSR-PSO',
             icon: iconPath,
+            alwaysOnTop: true,
             webPreferences: {
                 preload: preloadPath,
                 contextIsolation: true,
                 nodeIntegration: false,
+                enableRemoteModule: false,
+                v8CacheOptions: 'code',
+                nodeIntegration: false,
+                sandbox: true,
             },
             autoMenuBar: true,
         });

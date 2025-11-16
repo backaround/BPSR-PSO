@@ -88,10 +88,15 @@ class SkillDetailsWindow {
             frame: false,
             title: 'BPSR-PSO Skill Details',
             icon: iconPath,
+            alwaysOnTop: true,
             webPreferences: {
                 preload: preloadPath,
                 contextIsolation: true,
                 nodeIntegration: false,
+                enableRemoteModule: false,
+                v8CacheOptions: 'code',
+                nodeIntegration: false,
+                sandbox: true,
             },
             autoMenuBar: true,
         });

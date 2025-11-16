@@ -12,8 +12,8 @@ let currentUserId = null;
 let currentUserData = null;
 
 // Create RAF scheduler for render and update functions (10 FPS to match WebSocket rate)
-const renderScheduler = createRAFScheduler(10);
-const updateScheduler = createRAFScheduler(10);
+const renderScheduler = createRAFScheduler(5);
+const updateScheduler = createRAFScheduler(5);
 
 function formatNumber(num) {
     if (isNaN(num)) return 'NaN';
@@ -194,6 +194,9 @@ function createSkillRowHTML(skillId, skillData, sectionTotal = 0) {
 
 // Update existing skill row (only what changed)
 function updateSkillRow(skillElement, skillId, skillData, sectionTotal = 0) {
+    // Track if any changes occurred for flash effect
+    let hasChanged = false;
+
     const typeColor = getSkillTypeColor(skillData.type);
     const skillIcon = skillData.image;
     const avgDamage = skillData.totalCount > 0 ? skillData.totalDamage / skillData.totalCount : 0;
@@ -245,6 +248,7 @@ function updateSkillRow(skillElement, skillId, skillData, sectionTotal = 0) {
     const newCount = `(${skillData.totalCount} hits)`;
     if (countEl && countEl.textContent !== newCount) {
         countEl.textContent = newCount;
+        hasChanged = true;
     }
 
     // Update avg per hit
@@ -280,6 +284,11 @@ function updateSkillRow(skillElement, skillId, skillData, sectionTotal = 0) {
     const newLuckyCount = String(skillData.luckyCount);
     if (luckyCountEl && luckyCountEl.textContent !== newLuckyCount) {
         luckyCountEl.textContent = newLuckyCount;
+    }
+
+    // Flash the skill row if any changes occurred
+    if (hasChanged) {
+        flashRow(skillElement);
     }
 }
 
