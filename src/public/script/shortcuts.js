@@ -84,7 +84,9 @@
             if (parts.length < 2) return false;
 
             const hasModifier = parts.slice(0, -1).some((part) => ['Ctrl', 'Alt', 'Shift', 'Meta'].includes(part));
-            const hasLetter = /^[A-Z`]$/.test(parts[parts.length - 1]) || ['Up', 'Down', 'Left', 'Right'].includes(parts[parts.length - 1]);
+            const hasLetter =
+                /^[A-Z`]$/.test(parts[parts.length - 1]) ||
+                ['Up', 'Down', 'Left', 'Right'].includes(parts[parts.length - 1]);
 
             return hasModifier && hasLetter;
         }
@@ -236,10 +238,9 @@
             if (window.electronAPI && window.electronAPI.saveShortcuts) {
                 await window.electronAPI.saveShortcuts(shortcuts);
                 currentShortcuts = shortcuts;
-
-                // Show success feedback
-                showNotification('Shortcuts saved successfully!', 'success');
             }
+
+            showNotification('Shortcuts saved successfully!', 'success');
         } catch (error) {
             console.error('Failed to save shortcuts:', error);
             showNotification('Failed to save shortcuts', 'error');
@@ -252,35 +253,78 @@
     function resetShortcuts() {
         currentShortcuts = { ...DEFAULT_SHORTCUTS };
         updateInputValues();
-        showNotification('Shortcuts reset to default', 'info');
+        showNotification('Shortcuts reset successfully!', 'success');
     }
 
     /**
      * Show notification
      */
     function showNotification(message, type = 'info') {
-        // Simple notification implementation
+        // Define icons and colors for each notification type
+        const config = {
+            success: {
+                iconPath: '/assets/check.svg',
+                background: 'rgba(0, 200, 83, 0.3)',
+            },
+            error: {
+                iconPath: '/assets/x.svg',
+                background: 'rgba(255, 60, 60, 0.3)',
+            },
+            info: {
+                iconPath: '/assets/settings.svg',
+                background: 'rgba(41, 98, 255, 0.3)',
+            },
+        };
+
+        const { iconPath, background } = config[type] || config.info;
+
+        // Create notification container
         const notification = document.createElement('div');
-        notification.textContent = message;
         notification.style.cssText = `
             position: fixed;
-            top: 60px;
-            right: 20px;
-            padding: 12px 20px;
-            background: ${type === 'success' ? 'rgba(0, 200, 83, 0.9)' : type === 'error' ? 'rgba(255, 60, 60, 0.9)' : 'rgba(41, 98, 255, 0.9)'};
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 16px;
+            background: ${background};
             color: white;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             z-index: 10000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            animation: notificationSlideIn 0.3s ease forwards;
         `;
 
+        // Create icon element
+        const iconElement = document.createElement('img');
+        iconElement.src = iconPath;
+        iconElement.style.cssText = `
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            filter: invert(1) sepia(0) saturate(0) hue-rotate(180deg) brightness(1.2);
+        `;
+
+        // Create message element
+        const messageElement = document.createElement('div');
+        messageElement.textContent = message;
+        messageElement.style.cssText = `
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        `;
+
+        notification.appendChild(iconElement);
+        notification.appendChild(messageElement);
         document.body.appendChild(notification);
 
+        // Auto-dismiss with slide-out animation
         setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease';
+            notification.style.animation = 'notificationSlideOut 0.3s ease forwards';
             setTimeout(() => notification.remove(), 300);
         }, 2000);
     }
@@ -313,26 +357,26 @@
             resetButton.addEventListener('click', resetShortcuts);
         }
 
-        // Add CSS animation styles
+        // Add notification animation keyframes
         const style = document.createElement('style');
         style.textContent = `
-            @keyframes slideIn {
+            @keyframes notificationSlideIn {
                 from {
-                    transform: translateX(100%);
+                    top: 45px;
                     opacity: 0;
                 }
                 to {
-                    transform: translateX(0);
+                    top: 50px;
                     opacity: 1;
                 }
             }
-            @keyframes slideOut {
+            @keyframes notificationSlideOut {
                 from {
-                    transform: translateX(0);
+                    top: 50px;
                     opacity: 1;
                 }
                 to {
-                    transform: translateX(100%);
+                    top: 45px;
                     opacity: 0;
                 }
             }

@@ -1,6 +1,6 @@
 {
     "shortcuts": {
-        "togglePassthrough": "Control+A",
+        "togglePassthrough": "Control+`",
         "clearData": "Control+Alt+`",
         "minimizeRestore": "Control+Alt+Z",
         "resizeUp": "Control+Up",

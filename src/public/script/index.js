@@ -463,7 +463,7 @@ function processDataUpdate(data) {
     updateAll();
 }
 
-async function clearData() {
+async function clearDataFn() {
     try {
         const currentStatus = getServerStatus();
         showServerStatus('cleared');
@@ -483,6 +483,8 @@ async function clearData() {
         console.error('Error sending clear request to server:', error);
     }
 }
+
+const clearData = debounce(clearDataFn, 1000);
 
 async function togglePause() {
     const newPausedState = !isPaused;
