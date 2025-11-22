@@ -14,7 +14,7 @@ import logger from './services/Logger.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const SETTINGS_PATH = path.join(__dirname, 'settings.json');
-let isPaused = false;
+const pauseState = { isPaused: false };
 let globalSettings = {
     autoClearOnServerChange: true,
     autoClearOnTimeout: true,
@@ -34,7 +34,7 @@ class Server {
                 app.use(cors());
                 app.use(express.static(path.join(__dirname, 'public')));
 
-                const apiRouter = createApiRouter(isPaused, SETTINGS_PATH);
+                const apiRouter = createApiRouter(pauseState, SETTINGS_PATH);
                 app.use('/api', apiRouter);
 
                 this.server = http.createServer(app);
@@ -68,7 +68,7 @@ class Server {
 
     _configureSocketEmitter() {
         setInterval(() => {
-            if (!isPaused) {
+            if (!pauseState.isPaused) {
                 userDataManager.updateAllRealtimeDps();
                 const userData = userDataManager.getAllUsersData();
                 socket.emit('data', { code: 0, user: userData });

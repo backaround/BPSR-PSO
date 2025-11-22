@@ -3,16 +3,20 @@ import path from 'path';
 import logger from '../services/Logger.js';
 import { promises as fsPromises } from 'fs';
 import userDataManager from '../services/UserDataManager.js';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Creates and returns an Express Router instance configured with all API endpoints.
  * @param {object} userDataManager The data manager instance for user data.
  * @param {object} logger The Winston logger instance.
- * @param {boolean} isPaused The state of the statistics being paused.
+ * @param {object} pauseState The state object containing isPaused property.
  * @param {string} SETTINGS_PATH The path to the settings file.
  * @returns {express.Router} An Express Router with all routes defined.
  */
-export function createApiRouter(isPaused, SETTINGS_PATH) {
+export function createApiRouter(pauseState, SETTINGS_PATH) {
     const router = express.Router();
 
     // Middleware to parse JSON requests
@@ -51,12 +55,12 @@ export function createApiRouter(isPaused, SETTINGS_PATH) {
     // Pause/Resume statistics
     router.post('/pause', (req, res) => {
         const { paused } = req.body;
-        isPaused = paused;
-        logger.info(`Statistics ${isPaused ? 'paused' : 'resumed'}!`);
+        pauseState.isPaused = paused;
+        logger.info(`Statistics ${pauseState.isPaused ? 'paused' : 'resumed'}!`);
         res.json({
             code: 0,
-            msg: `Statistics ${isPaused ? 'paused' : 'resumed'}!`,
-            paused: isPaused,
+            msg: `Statistics ${pauseState.isPaused ? 'paused' : 'resumed'}!`,
+            paused: pauseState.isPaused,
         });
     });
 
@@ -64,7 +68,7 @@ export function createApiRouter(isPaused, SETTINGS_PATH) {
     router.get('/pause', (req, res) => {
         res.json({
             code: 0,
-            paused: isPaused,
+            paused: pauseState.isPaused,
         });
     });
 
@@ -218,6 +222,44 @@ export function createApiRouter(isPaused, SETTINGS_PATH) {
         globalSettings = { ...globalSettings, ...newSettings };
         await fsPromises.writeFile(SETTINGS_PATH, JSON.stringify(globalSettings, null, 2), 'utf8');
         res.json({ code: 0, data: globalSettings });
+    });
+
+    // Get shortcuts configuration
+    router.get('/shortcuts', async (req, res) => {
+        const SHORTCUTS_PATH = path.join(__dirname, '../../shortcuts.json');
+        try {
+            const data = await fsPromises.readFile(SHORTCUTS_PATH, 'utf8');
+            const shortcuts = JSON.parse(data);
+            res.json({ code: 0, data: shortcuts });
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                // File doesn't exist, return default shortcuts
+                res.json({ code: 0, data: null });
+            } else {
+                logger.error('Failed to load shortcuts:', error);
+                res.status(500).json({
+                    code: 1,
+                    msg: 'Failed to load shortcuts',
+                });
+            }
+        }
+    });
+
+    // Update shortcuts configuration
+    router.post('/shortcuts', async (req, res) => {
+        const SHORTCUTS_PATH = path.join(__dirname, '../../shortcuts.json');
+        try {
+            const newShortcuts = req.body;
+            await fsPromises.writeFile(SHORTCUTS_PATH, JSON.stringify(newShortcuts, null, 2), 'utf8');
+            logger.info('Shortcuts configuration updated');
+            res.json({ code: 0, data: newShortcuts, msg: 'Shortcuts saved successfully' });
+        } catch (error) {
+            logger.error('Failed to save shortcuts:', error);
+            res.status(500).json({
+                code: 1,
+                msg: 'Failed to save shortcuts',
+            });
+        }
     });
 
     return router;

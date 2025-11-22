@@ -542,6 +542,12 @@ function initialize() {
 
 document.addEventListener('DOMContentLoaded', () => {
     initialize();
+
+    // Listen for passthrough toggle events
+    window.electronAPI?.onTogglePassthrough((isIgnoring) => {
+        // You can add visual feedback here if needed
+        console.log('Passthrough toggled:', isIgnoring);
+    });
 });
 
 window.closeWindow = closeWindow;

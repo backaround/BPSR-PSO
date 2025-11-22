@@ -60,7 +60,8 @@ let selectedClasses = new Set([
 const renderScheduler = createRAFScheduler(5);
 
 function scheduleRenderDataList(users) {
-    renderScheduler.schedule(renderDataList, users);
+    renderDataList(users);
+    // renderScheduler.schedule(renderDataList, users);
 }
 
 function formatNumber(num) {
@@ -493,12 +494,33 @@ async function clearData() {
     }
 }
 
-function togglePause() {
-    isPaused = !isPaused;
-    pauseButton.innerHTML = isPaused
-        ? '<img class="icon-button" src="/assets/caret-right.svg" />'
-        : '<img class="icon-button" src="/assets/player-pause.svg" />';
-    showServerStatus(isPaused ? 'paused' : 'connected');
+async function togglePause() {
+    const newPausedState = !isPaused;
+
+    try {
+        const response = await fetch(`http://${SERVER_URL}/api/pause`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ paused: newPausedState }),
+        });
+
+        const result = await response.json();
+
+        if (result.code === 0) {
+            isPaused = newPausedState;
+            pauseButton.innerHTML = isPaused
+                ? '<img class="icon-button" src="/assets/caret-right.svg" />'
+                : '<img class="icon-button" src="/assets/player-pause.svg" />';
+            showServerStatus(isPaused ? 'paused' : 'connected');
+            console.log('Pause state updated:', result.msg);
+        } else {
+            console.error('Failed to update pause state:', result.msg);
+        }
+    } catch (error) {
+        console.error('Error sending pause request to server:', error);
+    }
 }
 
 function closeClient() {

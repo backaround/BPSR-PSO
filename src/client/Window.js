@@ -119,6 +119,7 @@ class Window {
                 enableRemoteModule: false,
                 v8CacheOptions: 'code',
                 nodeIntegration: false,
+                webgl: true,
             },
             autoMenuBar: true,
         });

@@ -23,6 +23,7 @@ class SkillDetailsWindow {
         height: 450,
         x: undefined,
         y: undefined,
+        passthrough: false,
     };
 
     /**
@@ -55,6 +56,7 @@ class SkillDetailsWindow {
                 height: bounds.height,
                 x: bounds.x,
                 y: bounds.y,
+                passthrough: this.config.passthrough,
             };
             fs.writeFileSync(configPath, JSON.stringify(configData, null, 4));
         } catch (error) {
@@ -112,6 +114,7 @@ class SkillDetailsWindow {
                 enableRemoteModule: false,
                 v8CacheOptions: 'code',
                 nodeIntegration: false,
+                webgl: true,
             },
             autoMenuBar: true,
         });
@@ -124,6 +127,11 @@ class SkillDetailsWindow {
 
         this._window.on('close', () => this._saveConfig());
         this._window.on('closed', () => (this._window = null));
+        this._window.webContents.on('did-finish-load', () => {
+            if (this.config.passthrough) {
+                this.setPassthrough(true);
+            }
+        });
 
         return this._window;
     }
@@ -160,6 +168,32 @@ class SkillDetailsWindow {
         if (this._window && !this._window.isDestroyed()) {
             this._window.loadURL(url);
         }
+    }
+
+    /**
+     * Sets the passthrough state for the window.
+     * @param {boolean} enabled - Whether passthrough should be enabled.
+     */
+    setPassthrough(enabled) {
+        this.config.passthrough = enabled;
+
+        if (this._window && !this._window.isDestroyed()) {
+            if (enabled) {
+                this._window.setIgnoreMouseEvents(true, { forward: true });
+            } else {
+                this._window.setIgnoreMouseEvents(false);
+            }
+
+            this._window.webContents.send('passthrough-toggled', enabled);
+        }
+    }
+
+    /**
+     * Gets the current passthrough state.
+     * @returns {boolean}
+     */
+    getPassthrough() {
+        return this.config.passthrough;
     }
 }
 
