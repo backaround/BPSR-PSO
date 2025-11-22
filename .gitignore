@@ -95,3 +95,5 @@ out/
 users.json
 windowConfig.json
 skillDetailsWindowConfig.json
+shortcutsConfig.json
+shortcutsWindowConfig.json
