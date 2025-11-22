@@ -12,8 +12,8 @@ let currentUserId = null;
 let currentUserData = null;
 
 // Create RAF scheduler for render and update functions (10 FPS to match WebSocket rate)
-const renderScheduler = createRAFScheduler(5);
-const updateScheduler = createRAFScheduler(5);
+const renderScheduler = createRAFScheduler(3);
+const updateScheduler = createRAFScheduler(3);
 
 function formatNumber(num) {
     if (isNaN(num)) return 'NaN';

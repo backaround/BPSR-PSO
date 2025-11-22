@@ -57,7 +57,7 @@ let selectedClasses = new Set([
 ]);
 
 // Create RAF scheduler for rendering (10 FPS to match WebSocket rate)
-const renderScheduler = createRAFScheduler(5);
+const renderScheduler = createRAFScheduler(3);
 
 function scheduleRenderDataList(users) {
     renderScheduler.schedule(renderDataList, users);
@@ -258,9 +258,6 @@ function initMainBarContent({ index, user, damagePercent, healingPercent, damage
 
 // Update only the necessary parts of an existing row
 function updateRowData(item, { index, user, damagePercent, healingPercent, damageTakenPercent }) {
-    // Track if any changes occurred for flash effect
-    let hasChanged = false;
-
     // figure out mode-specific main content + percent
     let mainContent = '';
     let mainPercent = 0;
@@ -322,7 +319,6 @@ function updateRowData(item, { index, user, damagePercent, healingPercent, damag
     }
     if (stats && newStats !== oldStats) {
         stats.textContent = newStats;
-        hasChanged = true;
     }
     if (name && newName !== oldName) {
         name.textContent = newName;
@@ -362,11 +358,6 @@ function updateRowData(item, { index, user, damagePercent, healingPercent, damag
             subInfo.innerHTML = html;
             subInfo.__htmlCache = html;
         }
-    }
-
-    // Flash the row if any changes occurred
-    if (hasChanged) {
-        flashRow(item);
     }
 }
 
