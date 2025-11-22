@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Shortcuts Configuration</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="styles/shortcuts.css" />
+        <link rel="stylesheet" href="components/hotkeyInput/style.css" />
+        <link rel="stylesheet" href="components/button/style.css" />
+    </head>
+    <body>
+        <div id="app-wrapper">
+            <div class="main-container">
+                <!-- Header -->
+                <div class="controls">
+                    <div class="title-container">
+                        <span class="app-title">Shortcuts Configuration</span>
+                    </div>
+                    <button data-button id="closeButton" onclick="closeWindow()" title="Close Window">
+                        <img class="icon-button" src="/assets/x.svg" />
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div class="content">
+                    <div class="shortcuts-container">
+                        <!-- Window Controls Section -->
+                        <div class="section">
+                            <h3 class="section-title">Window Controls</h3>
+
+                            <div class="shortcut-item">
+                                <label class="shortcut-label">Toggle Passthrough</label>
+                                <input
+                                    data-type-hotkey
+                                    id="togglePassthrough"
+                                    data-shortcut-key="togglePassthrough"
+                                    placeholder="Press keys…"
+                                />
+                            </div>
+
+                            <div class="shortcut-item">
+                                <label class="shortcut-label">Clear Data</label>
+                                <input
+                                    data-type-hotkey
+                                    id="clearData"
+                                    data-shortcut-key="clearData"
+                                    placeholder="Press keys…"
+                                />
+                            </div>
+
+                            <div class="shortcut-item">
+                                <label class="shortcut-label">Minimize/Restore Window</label>
+                                <input
+                                    data-type-hotkey
+                                    id="minimizeRestore"
+                                    data-shortcut-key="minimizeRestore"
+                                    placeholder="Press keys…"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Window Resize Section -->
+                        <div class="section">
+                            <h3 class="section-title">Window Resize</h3>
+
+                            <div class="shortcut-item">
+                                <label class="shortcut-label">Resize Up</label>
+                                <input
+                                    data-type-hotkey
+                                    id="resizeUp"
+                                    data-shortcut-key="resizeUp"
+                                    placeholder="Press keys…"
+                                />
+                            </div>
+
+                            <div class="shortcut-item">
+                                <label class="shortcut-label">Resize Down</label>
+                                <input
+                                    data-type-hotkey
+                                    id="resizeDown"
+                                    data-shortcut-key="resizeDown"
+                                    placeholder="Press keys…"
+                                />
+                            </div>
+
+                            <div class="shortcut-item">
+                                <label class="shortcut-label">Resize Left</label>
+                                <input
+                                    data-type-hotkey
+                                    id="resizeLeft"
+                                    data-shortcut-key="resizeLeft"
+                                    placeholder="Press keys…"
+                                />
+                            </div>
+
+                            <div class="shortcut-item">
+                                <label class="shortcut-label">Resize Right</label>
+                                <input
+                                    data-type-hotkey
+                                    id="resizeRight"
+                                    data-shortcut-key="resizeRight"
+                                    placeholder="Press keys…"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Window Move Section -->
+                        <div class="section">
+                            <h3 class="section-title">Window Move</h3>
+
+                            <div class="shortcut-item">
+                                <label class="shortcut-label">Move Up</label>
+                                <input
+                                    data-type-hotkey
+                                    id="moveUp"
+                                    data-shortcut-key="moveUp"
+                                    placeholder="Press keys…"
+                                />
+                            </div>
+
+                            <div class="shortcut-item">
+                                <label class="shortcut-label">Move Down</label>
+                                <input
+                                    data-type-hotkey
+                                    id="moveDown"
+                                    data-shortcut-key="moveDown"
+                                    placeholder="Press keys…"
+                                />
+                            </div>
+
+                            <div class="shortcut-item">
+                                <label class="shortcut-label">Move Left</label>
+                                <input
+                                    data-type-hotkey
+                                    id="moveLeft"
+                                    data-shortcut-key="moveLeft"
+                                    placeholder="Press keys…"
+                                />
+                            </div>
+
+                            <div class="shortcut-item">
+                                <label class="shortcut-label">Move Right</label>
+                                <input
+                                    data-type-hotkey
+                                    id="moveRight"
+                                    data-shortcut-key="moveRight"
+                                    placeholder="Press keys…"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="footer">
+                    <button data-button id="resetButton">
+                        <span class="button-content">
+                            <img class="icon-button" src="/assets/refresh.svg" style="width: 16px; height: 16px" />
+                            <span class="button-text">Reset to Default</span>
+                        </span>
+                    </button>
+                    <button data-button id="saveButton" class="primary">
+                        <span class="button-content">
+                            <img class="icon-button" src="/assets/check.svg" style="width: 16px; height: 16px" />
+                            <span class="button-text">Save Changes</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script src="script/shortcuts.js"></script>
+    </body>
+</html>

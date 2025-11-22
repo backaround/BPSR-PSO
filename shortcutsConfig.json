@@ -1,0 +1,15 @@
+{
+    "shortcuts": {
+        "togglePassthrough": "Control+A",
+        "clearData": "Control+Alt+`",
+        "minimizeRestore": "Control+Alt+Z",
+        "resizeUp": "Control+Up",
+        "resizeDown": "Control+Down",
+        "resizeLeft": "Control+Left",
+        "resizeRight": "Control+Right",
+        "moveUp": "Control+Alt+Up",
+        "moveDown": "Control+Alt+Down",
+        "moveLeft": "Control+Alt+Left",
+        "moveRight": "Control+Alt+Right"
+    }
+}

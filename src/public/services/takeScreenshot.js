@@ -31,7 +31,7 @@ async function takeScreenshot() {
         }
 
         // Get actual content height
-        const contentHeight = container.scrollHeight;
+        const contentHeight = container.scrollHeight + 20;
         const contentWidth = container.scrollWidth;
 
         // Capture the screenshot using dom-to-image-more (supports CSS filters)

@@ -42,56 +42,14 @@
                                 <img class="icon-button" src="/assets/player-pause.svg" />
                             </button>
 
-                            <div data-popup-trigger="helper">
-                                <button data-button title="Help">
-                                    <img class="icon-button" src="/assets/question-mark.svg" />
-                                </button>
-                            </div>
-                            <div data-popup-content="helper">
-                                <div class="help-container">
-                                    <h2>Keyboard Shortcuts</h2>
-                                    <ul>
-                                        <li>
-                                            <strong>Toggle Mouse Pass-through:</strong>
-                                            <br />
-                                            Press <code>Control+`</code> to allow mouse clicks to "pass through" this
-                                            window to the applications behind it. Press the key combination again to
-                                            restore normal mouse interaction.
-                                        </li>
-                                        <li>
-                                            <strong>Clear Data:</strong>
-                                            <br />
-                                            Press <code>Control+Alt+`</code> to clear the current data and start fresh
-                                        </li>
-                                        <li>
-                                            <strong>Minimize Window Content:</strong>
-                                            <br />
-                                            Press <code>Control+Alt+Z</code> to minimize the content section of the
-                                            application. Press the key combination again to restore content section
-                                            size.
-                                        </li>
-                                        <li>
-                                            <strong>Resize Window:</strong>
-                                            <br />
-                                            Press <code>Control + Arrow Keys</code> to resize the application window.
-                                        </li>
-                                        <li>
-                                            <strong>Move Window:</strong>
-                                            <br />
-                                            Press <code>Control + Alt + Arrow Keys</code> to move the application
-                                            window.
-                                        </li>
-                                    </ul>
-                                    <h2>Sorting Options</h2>
-                                    <ul>
-                                        <li><strong>Damage:</strong> Sort by total damage dealt</li>
-                                        <li><strong>Healing:</strong> Sort by total healing done</li>
-                                        <li><strong>Taken:</strong> Sort by total damage taken received</li>
-                                        <li><strong>DPS:</strong> Sort by avg. damage per second</li>
-                                        <li><strong>HPS:</strong> Sort by avg. healing per second</li>
-                                    </ul>
-                                </div>
-                            </div>
+                            <button
+                                data-button
+                                id="screenshotButton"
+                                onclick="takeScreenshot()"
+                                title="Take Screenshot"
+                            >
+                                <img class="icon-button" src="/assets/camera.svg" />
+                            </button>
 
                             <div data-popup-trigger="setting">
                                 <button data-button title="Settings">
@@ -146,9 +104,9 @@
                                     <div class="settings-option">
                                         <button
                                             data-button
-                                            id="screenshotButton"
-                                            onclick="takeScreenshot()"
-                                            title="Take Screenshot"
+                                            id="shortcutsButton"
+                                            onclick="openShortcutsWindow()"
+                                            title="Configure Shortcuts"
                                         >
                                             <span
                                                 style="
@@ -160,13 +118,11 @@
                                             >
                                                 <img
                                                     class="icon-button"
-                                                    src="/assets/camera.svg"
+                                                    src="/assets/keyboard.svg"
                                                     style="width: 16px; height: 16px"
                                                 />
-                                                <span
-                                                    style="font-size: 13px; font-weight: 500"
-                                                    id="screenshotButtonText"
-                                                    >Take Screenshot</span
+                                                <span style="font-size: 13px; font-weight: 500"
+                                                    >Configure Shortcuts</span
                                                 >
                                             </span>
                                         </button>

@@ -652,9 +652,14 @@ function openSkillDetailsForUser(userId) {
     window.electronAPI.openSkillDetailsWindow(userId);
 }
 
+function openShortcutsWindow() {
+    window.electronAPI.openShortcutsWindow();
+}
+
 window.clearData = clearData;
 window.togglePause = togglePause;
 window.closeClient = closeClient;
 window.takeScreenshot = takeScreenshot;
 window.openSkillDetails = openSkillDetails;
 window.openSkillDetailsForUser = openSkillDetailsForUser;
+window.openShortcutsWindow = openShortcutsWindow;
