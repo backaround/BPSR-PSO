@@ -60,8 +60,7 @@ let selectedClasses = new Set([
 const renderScheduler = createRAFScheduler(5);
 
 function scheduleRenderDataList(users) {
-    renderDataList(users);
-    // renderScheduler.schedule(renderDataList, users);
+    renderScheduler.schedule(renderDataList, users);
 }
 
 function formatNumber(num) {
